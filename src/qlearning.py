@@ -11,27 +11,30 @@ from random import choice, random
 
 from gridworld import GridWorld
 
-def q_learning(grid, episode_limit, epsilon):
+def q_learning(grid, episode_limit, epsilon, learning_rate):
     action_grid = [[0 for _ in range(grid.x)] for _ in range(grid.y)]
     options = ("up", "down", "left", "right")
 
     for episode in range(episode_limit):
         test_grid = deepcopy(grid)
+
         while test_grid.agent.reward == 0:
             if epsilon < random:
                 action = choice(options)
             else:
-                pass
+                action, reward = get_best_neighbour(test_grid, action_grid)
+            test_grid.agent.move(action)
+
 
 def get_best_neighbour(state_grid, action_grid):
     neighbours = state_grid.agent.get_neighbours()
 
     best_neighbour = (None, 0)
     for neighbour in neighbours:
-        if action_grid[neighbour[1]][neighbour[2]] > best_neighbour[1]:
+        if action_grid[neighbour[1]][neighbour[2]] >= best_neighbour[1]:
             best_neighbour = (neighbour[0], action_grid[neighbour[1]][neighbour[2]])
 
-    return best_neighbour[0]
+    return best_neighbour
 
 
 
