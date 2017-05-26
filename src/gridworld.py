@@ -9,7 +9,7 @@ class GridWorld:
     """
 
     def __init__(self):
-        start = location(5, 3)
+        self.start = location(5, 3)
         self.x = 9
         self.y = 6
 
@@ -20,7 +20,9 @@ class GridWorld:
 
         self.size = sum([len([x for x in y if x != "X"]) for y in self.grid])
 
-        self.agent = GridAgent(self, start.x, start.y, 0)
+        self.agent = GridAgent(self, self.start.x, self.start.y, 0)
+        self.goal = location(0, 8)
+        self.grid[self.goal.x][self.goal.y] = "G"
 
     def make_cell_impassible(self, row, col):
         self.grid[row][col] = "X"
@@ -67,7 +69,12 @@ class GridAgent:
                 self.row += 1
 
         self.gridworld.grid[previous.x][previous.y] = "O"
-        self.gridworld.grid[self.row][self.column] = self
+
+        if location(self.row, self.column) == self.gridworld.goal:
+            self.reward += 1
+            self.gridworld.grid[self.gridworld.start.x][self.gridworld.start.y] = self
+        else:
+            self.gridworld.grid[self.row][self.column] = self
 
     def __str__(self):
         return "A"
@@ -75,6 +82,7 @@ class GridAgent:
 
 if __name__ == '__main__':
     gridworld = GridWorld()
+    print(gridworld)
     gridworld.agent.move("right")
     gridworld.agent.move("right")
     gridworld.agent.move("right")
