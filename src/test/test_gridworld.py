@@ -1,12 +1,13 @@
 import pytest
 
-from src.gridworld import Gridworld
+from src.gridworld import GridWorld, GridAgent
 
 
 def test_grid_world():
-    grid_world = Gridworld()
+    grid_world = GridWorld()
     assert grid_world.size == 46
 
-def test_maze_agent_in_start():
-    gridworld = Gridworld()
-    assert isinstance(gridworld.grid[5][3], MazeAgent)
+
+def test_agent_in_start():
+    gridworld = GridWorld()
+    assert isinstance(gridworld.grid[5][3], GridAgent)
