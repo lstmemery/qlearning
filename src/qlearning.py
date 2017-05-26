@@ -21,7 +21,11 @@ def q_learning(grid, episode_limit, epsilon):
             if epsilon < random:
                 action = choice(options)
             else:
-                test
+                pass
+
+def get_best_neighbour(state_grid, action_grid):
+    neighbours = state_grid.agent.get_neigbhours()
+    pass
 
 
 
