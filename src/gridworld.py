@@ -75,7 +75,14 @@ class GridAgent:
 
 if __name__ == '__main__':
     gridworld = GridWorld()
+    gridworld.agent.move("right")
+    gridworld.agent.move("right")
+    gridworld.agent.move("right")
+    gridworld.agent.move("right")
+    gridworld.agent.move("right")
     gridworld.agent.move("up")
     gridworld.agent.move("up")
-    gridworld.agent.move("down")
+    gridworld.agent.move("up")
+    gridworld.agent.move("up")
+    gridworld.agent.move("up")
     print(gridworld)

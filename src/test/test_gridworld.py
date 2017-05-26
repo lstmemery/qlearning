@@ -29,3 +29,18 @@ def test_agent_does_not_pass_impassible():
     assert isinstance(gridworld.grid[4][3], GridAgent)
     gridworld.agent.move("up")
     assert isinstance(gridworld.grid[4][3], GridAgent)
+
+def test_agent_rewarded_on_goal():
+    gridworld = GridWorld()
+    gridworld.agent.move("right")
+    gridworld.agent.move("right")
+    gridworld.agent.move("right")
+    gridworld.agent.move("right")
+    gridworld.agent.move("right")
+    gridworld.agent.move("up")
+    gridworld.agent.move("up")
+    gridworld.agent.move("up")
+    gridworld.agent.move("up")
+    gridworld.agent.move("up")
+    assert gridworld.agent.reward == 1
+    assert isinstance(gridworld.grid[5][3], GridAgent)
