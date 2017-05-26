@@ -2,8 +2,8 @@ from collections import namedtuple
 
 location = namedtuple("location", ["x", "y"])
 
-class GridWorld:
 
+class GridWorld:
     """
     O means passable. X means impassable. Grid counts downs. (Row, column) coordinates
     """
@@ -25,12 +25,14 @@ class GridWorld:
     def make_cell_impassible(self, row, col):
         self.grid[row][col] = "X"
 
+    def is_impassible(self, row, col):
+        return self.grid[row][col] == "X"
+
     def __str__(self):
         return '\n'.join(' '.join(str(x) for x in y) for y in self.grid)
 
 
 class GridAgent:
-
     def __init__(self, gridworld, row, column, reward):
         self.gridworld = gridworld
         self.row = row
@@ -45,28 +47,30 @@ class GridAgent:
         previous = location(self.row, self.column)
 
         if direction == "left":
-            if self.column > 0:
+            if self.column > 0 and \
+                    not self.gridworld.is_impassible(self.row, self.column - 1):
                 self.column -= 1
 
         elif direction == "right":
-            if self.column < self.gridworld.x - 1:
+            if self.column < self.gridworld.x - 1 and \
+                    not self.gridworld.is_impassible(self.row, self.column + 1):
                 self.column += 1
 
         elif direction == "up":
-            if self.row > 0:
+            if self.row > 0 and \
+                    not self.gridworld.is_impassible(self.row - 1, self.column):
                 self.row -= 1
 
         elif direction == "down":
-            if self.row < self.gridworld.y - 1:
+            if self.row < self.gridworld.y - 1 and \
+                    not self.gridworld.is_impassible(self.row + 1, self.column):
                 self.row += 1
 
         self.gridworld.grid[previous.x][previous.y] = "O"
         self.gridworld.grid[self.row][self.column] = self
 
-
     def __str__(self):
         return "A"
-
 
 
 if __name__ == '__main__':
