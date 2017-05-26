@@ -1,7 +1,7 @@
 class Gridworld:
 
     """
-    O means passable. X means impassable. Grid counts downs
+    O means passable. X means impassable. Grid counts downs. (Row, column) coordinates
     """
 
     def __init__(self):
