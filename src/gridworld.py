@@ -34,6 +34,7 @@ class GridWorld:
         return '\n'.join(' '.join(str(x) for x in y) for y in self.grid)
 
 
+
 class GridAgent:
     def __init__(self, gridworld, row, column, reward):
         self.gridworld = gridworld
@@ -75,6 +76,27 @@ class GridAgent:
             self.gridworld.grid[self.gridworld.start.x][self.gridworld.start.y] = self
         else:
             self.gridworld.grid[self.row][self.column] = self
+
+    def get_neighbours(self):
+        neighbours = []
+
+        if self.column > 0 and \
+                not self.gridworld.is_impassible(self.row, self.column - 1):
+            neighbours.append(("left", self.row, self.column - 1))
+
+        if self.column < self.gridworld.x - 1 and \
+                not self.gridworld.is_impassible(self.row, self.column + 1):
+            neighbours.append(("right", self.row, self.column + 1))
+
+        if self.row > 0 and \
+                not self.gridworld.is_impassible(self.row - 1, self.column):
+            neighbours.append(("up", self.row - 1, self.column))
+
+        if self.row < self.gridworld.y - 1 and \
+                not self.gridworld.is_impassible(self.row + 1, self.column):
+            neighbours.append(("down", self.row + 1, self.column))
+
+        return neighbours
 
     def __str__(self):
         return "A"

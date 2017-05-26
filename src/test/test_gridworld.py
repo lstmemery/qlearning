@@ -44,3 +44,7 @@ def test_agent_rewarded_on_goal():
     gridworld.agent.move("up")
     assert gridworld.agent.reward == 1
     assert isinstance(gridworld.grid[5][3], GridAgent)
+
+def test_neighbours():
+    gridworld = GridWorld()
+    assert [location[0] for location in gridworld.agent.get_neighbours()] == ["left", "right", "up"]
