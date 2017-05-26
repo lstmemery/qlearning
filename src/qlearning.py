@@ -24,8 +24,14 @@ def q_learning(grid, episode_limit, epsilon):
                 pass
 
 def get_best_neighbour(state_grid, action_grid):
-    neighbours = state_grid.agent.get_neigbhours()
-    pass
+    neighbours = state_grid.agent.get_neighbours()
+
+    best_neighbour = (None, 0)
+    for neighbour in neighbours:
+        if action_grid[neighbour[1]][neighbour[2]] > best_neighbour[1]:
+            best_neighbour = (neighbour[0], action_grid[neighbour[1]][neighbour[2]])
+
+    return best_neighbour[0]
 
 
 
