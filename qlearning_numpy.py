@@ -69,8 +69,8 @@ def qlearning(grid, episodes, epsilon, alpha, gamma):
     # Initialize Q
     q_matrix = np.zeros_like(r_matrix).astype(float)
     # For each episode
-    for _ in episodes:
-        #Initialize s
+    for _ in range(episodes):
+        # Initialize s
         state = index_1d(5, 3)
         # Repeat (for each step in an episode)
         while state != index_1d(0, 8):
@@ -83,13 +83,13 @@ def qlearning(grid, episodes, epsilon, alpha, gamma):
         # Take action a, observe r (reward?), s'
             reward = peek_reward(r_matrix, state, action)
             next_state = peek_next_state(r_matrix, state, action)
+            # Update Q
             q_matrix[state, action] = update_q(q_matrix, state, action, alpha, gamma, reward, next_state)
-
-        # Update Q
-        # Update state
+            # Update state
+            state = next_state
     # Until s is terminal
-
+    return q_matrix
 
 
 if __name__ == '__main__':
-    print(make_transition_matrix(state_grid))
+    print(qlearning(state_grid, 1000, epsilon=0.5, alpha=0.1, gamma=0.95))
