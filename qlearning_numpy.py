@@ -8,7 +8,12 @@ state_grid = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 1],
                      [0, 0, 0, 0, 0, 0, 0, 0, 0],
                      [0, 0, 0, 0, 0, 0, 0, 0, 0]])
 
-#TODO: Don't forget about the transition at 1000 iterations
+updated_grid = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 1],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, -1, -1, -1, -1, -1, -1, -1, -1],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0]])
 
 
 def make_transition_matrix(matrix):
@@ -64,32 +69,36 @@ def update_q(q, state, action, alpha, gamma, reward, next_state):
 
 
 
-def qlearning(grid, episodes, epsilon, alpha, gamma):
+def qlearning(grid, episodes, epsilon, alpha, gamma, updated_grid):
     r_matrix = make_transition_matrix(grid)
     # Initialize Q
     q_matrix = np.zeros_like(r_matrix).astype(float)
     # For each episode
+    steps = 0
     for _ in range(episodes):
         # Initialize s
         state = index_1d(5, 3)
         # Repeat (for each step in an episode)
         while state != index_1d(0, 8):
+            if steps == 1000:
+                r_matrix = make_transition_matrix(updated_grid)
             # With probability \epsilon choose random action
             if random() < epsilon:
                 action = randint(0, 3)
             # With probability 1 - \epsilon choose argmax Q
             else:
                 action = np.argmax(q_matrix[state])
-        # Take action a, observe r (reward?), s'
+            # Take action a, observe r, s'
             reward = peek_reward(r_matrix, state, action)
             next_state = peek_next_state(r_matrix, state, action)
             # Update Q
             q_matrix[state, action] = update_q(q_matrix, state, action, alpha, gamma, reward, next_state)
             # Update state
             state = next_state
+            steps += 1
     # Until s is terminal
     return q_matrix
 
 
 if __name__ == '__main__':
-    print(qlearning(state_grid, 1000, epsilon=0.5, alpha=0.1, gamma=0.95))
+    print(qlearning(state_grid, 1000, epsilon=0.5, alpha=0.1, gamma=0.95, updated_grid=updated_grid))
