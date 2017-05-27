@@ -7,12 +7,7 @@ state_grid = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 1],
                      [0, 0, 0, 0, 0, 0, 0, 0, 0],
                      [0, 0, 0, 0, 0, 0, 0, 0, 0]])
 
-#TODO: Don;t forget about the transition at 1000 iterations
-
-
-
-
-
+#TODO: Don't forget about the transition at 1000 iterations
 
 
 def make_transition_matrix(matrix):
@@ -28,7 +23,7 @@ def make_transition_matrix(matrix):
     return transition_matrix
 
 def index_1d(row, col):
-    pass
+    return row * 9 + col
 
 def qlearning(grid, episodes):
     r_matrix = make_transition_matrix(state_grid)
