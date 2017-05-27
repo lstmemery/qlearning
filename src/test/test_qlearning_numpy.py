@@ -14,5 +14,13 @@ def test_reverse_index_1d():
     for index in indices:
         assert reverse_index_1d(index_1d(*index)) == index
 
-def test_peak_next_state():
-    pass
+
+def test_peek_next_state():
+    # up
+    assert peek_next_state(index_1d(5, 3), 0) == index_1d(4, 3)
+    # right
+    assert peek_next_state(index_1d(5, 3), 1) == index_1d(5, 4)
+    # down
+    assert peek_next_state(index_1d(5, 3), 2) == index_1d(5, 3)
+    # left
+    assert peek_next_state(index_1d(5, 3), 3) == index_1d(5, 2)

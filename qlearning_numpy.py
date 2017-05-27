@@ -33,7 +33,10 @@ def reverse_index_1d(state):
     col = state % max_cols
     return row, col
 
-def peek_next_state(state):
+def peek_next_state(state, action):
+    pass
+
+def peek_reward(state, action):
     pass
 
 def qlearning(grid, episodes, epsilon):
