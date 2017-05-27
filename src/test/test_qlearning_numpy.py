@@ -1,3 +1,4 @@
+import pytest
 from qlearning_numpy import *
 
 def test_q_learning_size():
@@ -15,12 +16,17 @@ def test_reverse_index_1d():
         assert reverse_index_1d(index_1d(*index)) == index
 
 
-def test_peek_next_state():
+def test_peek_next_state(grid):
     # up
-    assert peek_next_state(index_1d(5, 3), 0) == index_1d(4, 3)
+    assert peek_next_state(grid, index_1d(5, 3), 0) == index_1d(4, 3)
     # right
-    assert peek_next_state(index_1d(5, 3), 1) == index_1d(5, 4)
+    assert peek_next_state(grid, index_1d(5, 3), 1) == index_1d(5, 4)
     # down
-    assert peek_next_state(index_1d(5, 3), 2) == index_1d(5, 3)
+    assert peek_next_state(grid, index_1d(5, 3), 2) == index_1d(5, 3)
     # left
-    assert peek_next_state(index_1d(5, 3), 3) == index_1d(5, 2)
+    assert peek_next_state(grid, index_1d(5, 3), 3) == index_1d(5, 2)
+
+
+@pytest.fixture()
+def grid():
+    return make_transition_matrix(state_grid)

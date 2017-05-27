@@ -33,8 +33,21 @@ def reverse_index_1d(state):
     col = state % max_cols
     return row, col
 
-def peek_next_state(state, action):
-    pass
+def peek_next_state(grid, state, action):
+    if grid[state, action] < 0:
+        return state
+    else:
+        row, col = reverse_index_1d(state)
+        if action == 0:
+            return index_1d(row - 1, col)
+        elif action == 1:
+            return index_1d(row, col + 1)
+        elif action == 2:
+            return index_1d(row + 1, col)
+        elif action == 3:
+            return index_1d(row, col - 1)
+        else:
+            raise ValueError("Action cannot be greater than 3")
 
 def peek_reward(state, action):
     pass
