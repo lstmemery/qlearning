@@ -49,7 +49,7 @@ def peek_next_state(grid, state, action):
         else:
             raise ValueError("Action cannot be greater than 3")
 
-def peek_reward(state, action):
+def peek_reward(grid, state, action):
     pass
 
 def qlearning(grid, episodes, epsilon):

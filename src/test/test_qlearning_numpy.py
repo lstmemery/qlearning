@@ -27,6 +27,16 @@ def test_peek_next_state(grid):
     assert peek_next_state(grid, index_1d(5, 3), 3) == index_1d(5, 2)
 
 
+def test_peek_reward(grid):
+    # up
+    assert peek_reward(grid, index_1d(5, 3), 0) == 0
+    # right
+    assert peek_reward(grid, index_1d(5, 3), 1) == 0
+    # down
+    assert peek_reward(grid, index_1d(5, 3), 2) == -1
+    # left
+    assert peek_reward(grid, index_1d(5, 3), 3) == 0
+
 @pytest.fixture()
 def grid():
     return make_transition_matrix(state_grid)
