@@ -1,5 +1,7 @@
 import pytest
-from qlearning_numpy import *
+
+from src.qlearning_numpy import *
+
 
 def test_q_learning_size():
     assert make_transition_matrix(state_grid).shape == (54, 4)

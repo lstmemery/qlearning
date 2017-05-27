@@ -1,4 +1,6 @@
 import numpy as np
+
+
 from random import random, randint
 
 state_grid = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -68,16 +70,19 @@ def update_q(q, state, action, alpha, gamma, reward, next_state):
     return next_q
 
 
-
 def qlearning(grid, episodes, epsilon, alpha, gamma, updated_grid):
     r_matrix = make_transition_matrix(grid)
     # Initialize Q
     q_matrix = np.zeros_like(r_matrix).astype(float)
     # For each episode
     steps = 0
+    steps_to_goal_list = []
     for _ in range(episodes):
         # Initialize s
         state = index_1d(5, 3)
+
+        steps_to_goal = 0
+
         # Repeat (for each step in an episode)
         while state != index_1d(0, 8):
             if steps == 1000:
@@ -96,9 +101,13 @@ def qlearning(grid, episodes, epsilon, alpha, gamma, updated_grid):
             # Update state
             state = next_state
             steps += 1
+            steps_to_goal += 1
+
+        steps_to_goal_list.append(steps_to_goal)
     # Until s is terminal
-    return q_matrix
+
+    return q_matrix, steps_to_goal_list
 
 
 if __name__ == '__main__':
-    print(qlearning(state_grid, 1000, epsilon=0.5, alpha=0.1, gamma=0.95, updated_grid=updated_grid))
+    q, iterations = qlearning(state_grid, 100, epsilon=0.1, alpha=0.1, gamma=0.95, updated_grid=updated_grid)
