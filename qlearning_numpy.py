@@ -1,4 +1,5 @@
 import numpy as np
+from random import random, randint
 
 state_grid = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 1],
                      [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -23,13 +24,36 @@ def make_transition_matrix(matrix):
     return transition_matrix
 
 def index_1d(row, col):
-    return row * 9 + col
+    max_cols = 9
+    return row * max_cols + col
 
-def qlearning(grid, episodes):
-    r_matrix = make_transition_matrix(state_grid)
+def reverse_index_1d(state):
+    pass
+
+def peek_next_state(state):
+    pass
+
+def qlearning(grid, episodes, epsilon):
+    r_matrix = make_transition_matrix(grid)
+    # Initialize Q
     q_matrix = np.zeros_like(r_matrix)
+    # For each episode
     for episode in episodes:
-        pass
+        #Initialize s
+        state = index_1d(5, 3)
+        # Repeat (for each step in an episode)
+        while state != index_1d(0, 8):
+            # With probability \epsilon choose random action
+            if random() < epsilon:
+                action = randint(0, 3)
+            # With probability 1 - \epsilon choose argmax Q
+            else:
+                action = np.argmax(q_matrix[state])
+        # Take action a, observe r (reward?), s'
+
+        # Update Q
+        # Update state
+    # Until s is terminal
 
 
 
