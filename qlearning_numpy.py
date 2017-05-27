@@ -23,15 +23,18 @@ def make_transition_matrix(matrix):
 
     return transition_matrix
 
+
 def index_1d(row, col):
     max_cols = 9
     return row * max_cols + col
+
 
 def reverse_index_1d(state):
     max_cols = 9
     row = state / max_cols
     col = state % max_cols
     return row, col
+
 
 def peek_next_state(grid, state, action):
     if grid[state, action] < 0:
@@ -49,8 +52,14 @@ def peek_next_state(grid, state, action):
         else:
             raise ValueError("Action cannot be greater than 3")
 
+
 def peek_reward(grid, state, action):
     return grid[state, action]
+
+
+def update_q(q, state, action, alpha, gamma):
+    pass
+
 
 def qlearning(grid, episodes, epsilon):
     r_matrix = make_transition_matrix(grid)
@@ -69,6 +78,9 @@ def qlearning(grid, episodes, epsilon):
             else:
                 action = np.argmax(q_matrix[state])
         # Take action a, observe r (reward?), s'
+            reward = peek_reward(r_matrix, state, action)
+            next_state = peek_next_state(r_matrix, state, action)
+
 
         # Update Q
         # Update state
