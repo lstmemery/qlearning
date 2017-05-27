@@ -13,26 +13,17 @@ state_grid = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 1],
 action_grid = np.zeros((6, 9))
 
 def make_transition_matrix(matrix):
-    transition_matrix = np.zeros((matrix.size, matrix.size)) - 1
 
-    rows, columns = matrix.shape
+    padded_matrix = np.pad(matrix, pad_width=1, mode="constant", constant_values=-1)
 
-    for row in range(0, rows):
-        for column in range(0, columns):
-            if row > 0 and matrix[row - 1, column] >= 0:
-                transition_matrix[column * rows + row, column * rows + row - 1] = matrix[row - 1, column]
+    up = np.roll(padded_matrix, shift=1, axis=0)[1:-1, 1:-1].flatten()
+    right = np.roll(padded_matrix, shift=-1, axis=1)[1:-1, 1:-1].flatten()
+    down = np.roll(padded_matrix, shift=-1, axis=0)[1:-1, 1:-1].flatten()
+    left = np.roll(padded_matrix, shift=1, axis=1)[1:-1, 1:-1].flatten()
 
-            if row < rows and matrix[row + 1, column] >= 0:
-                transition_matrix[column * rows + row, column * rows + row + 1] = matrix[row + 1, column]
+    transition_matrix = np.stack((up, right, down, left), axis=0).T
 
-            if column > 0 and matrix[row, column - 1] >= 0:
-                transition_matrix[column * rows + row, (column - 1) * rows + row] = matrix[row, column - 1]
-
-            if column > 0 and matrix[row, column - 1] >= 0:
-                transition_matrix[column * rows + row, (column - 1) * rows + row] = matrix[row, column - 1]
-
-    print(transition_matrix)
     return transition_matrix
 
 if __name__ == '__main__':
-    print(action_grid)
+    print(make_transition_matrix(state_grid))
