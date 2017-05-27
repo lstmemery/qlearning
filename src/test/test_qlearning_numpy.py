@@ -39,15 +39,16 @@ def test_peek_reward(grid):
 
 
 def test_update_q(grid):
-    q = np.zeros_like(grid)
+    q = np.zeros_like(grid).astype(float)
     state = index_1d(1, 8)
     action = 0
     alpha = 0.1
     gamma = 0.95
-    updated_q = update_q(q, state, action, alpha, gamma)
     reward = peek_reward(grid, state, action)
     next_state = peek_next_state(grid, state, action)
-    assert updated_q[state, action] == alpha * (reward + gamma * max(q[next_state, :]) - q[state, action])
+    updated_q = update_q(q, state, action, alpha, gamma, reward, next_state)
+    q[state, action] = updated_q
+    assert q[state, action] == alpha
 
 
 @pytest.fixture()

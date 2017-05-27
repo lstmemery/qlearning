@@ -57,16 +57,19 @@ def peek_reward(grid, state, action):
     return grid[state, action]
 
 
-def update_q(q, state, action, alpha, gamma):
-    pass
+def update_q(q, state, action, alpha, gamma, reward, next_state):
+    max_next_step = max(q[next_state, :])
+    next_q = q[state, action] + alpha * (reward + gamma * max_next_step - q[state, action])
+    return next_q
 
 
-def qlearning(grid, episodes, epsilon):
+
+def qlearning(grid, episodes, epsilon, alpha, gamma):
     r_matrix = make_transition_matrix(grid)
     # Initialize Q
-    q_matrix = np.zeros_like(r_matrix)
+    q_matrix = np.zeros_like(r_matrix).astype(float)
     # For each episode
-    for episode in episodes:
+    for _ in episodes:
         #Initialize s
         state = index_1d(5, 3)
         # Repeat (for each step in an episode)
@@ -80,7 +83,7 @@ def qlearning(grid, episodes, epsilon):
         # Take action a, observe r (reward?), s'
             reward = peek_reward(r_matrix, state, action)
             next_state = peek_next_state(r_matrix, state, action)
-
+            q_matrix[state, action] = update_q(q_matrix, state, action, alpha, gamma, reward, next_state)
 
         # Update Q
         # Update state
