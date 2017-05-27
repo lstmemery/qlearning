@@ -88,11 +88,7 @@ def qlearning(grid, episodes, epsilon, alpha, gamma, updated_grid):
             if steps == 1000:
                 r_matrix = make_transition_matrix(updated_grid)
             # With probability \epsilon choose random action
-            if random() < epsilon:
-                action = randint(0, 3)
-            # With probability 1 - \epsilon choose argmax Q
-            else:
-                action = np.argmax(q_matrix[state])
+            action = get_epsilon_greedy_action(epsilon, q_matrix, state)
             # Take action a, observe r, s'
             reward = peek_reward(r_matrix, state, action)
             next_state = peek_next_state(r_matrix, state, action)
@@ -107,6 +103,16 @@ def qlearning(grid, episodes, epsilon, alpha, gamma, updated_grid):
     # Until s is terminal
 
     return q_matrix, steps_to_goal_list
+
+
+def get_epsilon_greedy_action(epsilon, q_matrix, state):
+    if random() < epsilon:
+        action = randint(0, 3)
+    # With probability 1 - \epsilon choose argmax Q
+    else:
+        action = np.argmax(q_matrix[state])
+    return action
+
 
 #TODO: Can use hyperopt later
 
