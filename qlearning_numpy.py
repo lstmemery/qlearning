@@ -28,7 +28,10 @@ def index_1d(row, col):
     return row * max_cols + col
 
 def reverse_index_1d(state):
-    pass
+    max_cols = 9
+    row = state / max_cols
+    col = state % max_cols
+    return row, col
 
 def peek_next_state(state):
     pass
