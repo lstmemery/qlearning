@@ -1,5 +1,5 @@
 import numpy as np
-
+import hyperopt as hp
 
 from random import random, randint
 
@@ -108,6 +108,7 @@ def qlearning(grid, episodes, epsilon, alpha, gamma, updated_grid):
 
     return q_matrix, steps_to_goal_list
 
+#TODO: Can use hyperopt later
 
 if __name__ == '__main__':
     q, iterations = qlearning(state_grid, 100, epsilon=0.1, alpha=0.1, gamma=0.95, updated_grid=updated_grid)
