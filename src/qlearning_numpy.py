@@ -109,7 +109,7 @@ def get_epsilon_greedy_action(epsilon, q_matrix, state):
         action = randint(0, 3)
     # With probability 1 - \epsilon choose argmax Q
     else:
-        action = np.argmax(q_matrix[state])
+        action = np.random.choice(np.where(q_matrix[state] == q_matrix[state].max())[0])
     return action
 
 
@@ -117,3 +117,5 @@ def get_epsilon_greedy_action(epsilon, q_matrix, state):
 
 if __name__ == '__main__':
     q, iterations = qlearning(state_grid, 100, epsilon=0.1, alpha=0.1, gamma=0.95, updated_grid=updated_grid)
+    print(q)
+    print(iterations)

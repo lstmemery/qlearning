@@ -4,15 +4,16 @@ import src.qlearning_numpy as ql
 import ctypes
 
 
-def update_delta_q(q, state, action, gamma, reward, next_state):
+def update_delta_q(q, state, action, gamma, reward, next_state, global_q_state):
     max_next_step = max(q[next_state, :])
-    next_q = q[state, action] + (reward + gamma * max_next_step - q[state, action])
+    next_q = q[state, action] + (reward + gamma * max_next_step - global_q_state[state, action])
     return next_q
 
 
 def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, q, global_q_matrix):
     # Initialize thread step count t <- 1 (Not sure why this starts at 1)
     t = 1
+    total_reward = 0
     delta_q_matrix = np.zeros_like(r_matrix).astype(float)
 
     start_state = ql.index_1d(5, 3)
@@ -28,7 +29,7 @@ def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, q, global_
         # Take action a, observe r, s'
         reward = ql.peek_reward(r_matrix, state, action)
         next_state = ql.peek_next_state(r_matrix, state, action)
-        updated_q = update_delta_q(delta_q_matrix, state, action, gamma, reward, next_state)
+        updated_q = update_delta_q(delta_q_matrix, state, action, gamma, reward, next_state, np_q)
         # Accumulate updates:
         delta_q_matrix[state, action] = updated_q
         # s <- s'
@@ -37,7 +38,7 @@ def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, q, global_
         t += 1
 
         T.value += 1
-        print(T.value)
+        # print(ql.reverse_index_1d(state))
         # if t % I_AsyncUpdate == 0 or s is terminal then
         if t % async_update == 0 or state == ql.index_1d(0, 8):
             # Perform async update
@@ -45,9 +46,12 @@ def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, q, global_
             # clear updates \DeltaQ(s', a')
             delta_q_matrix = np.zeros_like(r_matrix).astype(float)
             if state == ql.index_1d(0, 8):
+                print("reached goal")
                 state = start_state
+                total_reward += 1
 
-    print("worker returning")
+    print(total_reward)
+    print(t)
 
 
 def send_local_q(q, delta_q_matrix):
@@ -121,5 +125,5 @@ if __name__ == '__main__':
                   epsilon=0.1,
                   alpha=0.1,
                   gamma=0.95,
-                  async_update=4,
+                  async_update=5,
                   Tmax=10000))
