@@ -1,8 +1,9 @@
-from multiprocessing import Process, Queue, Pipe, Value, Lock
+from multiprocessing import Process, Queue, Pipe, Value, Lock, Array
 import numpy as np
 import src.qlearning_numpy as ql
 import time
 from random import random
+import ctypes
 
 def qlearning_worker(r_matrix, epsilon, alpha, gamma, async_update, T, Tmax, q, parent_conn, lock):
     # Initialize thread step count t <- 1 (Not sure why this starts at 1)
@@ -33,7 +34,6 @@ def qlearning_worker(r_matrix, epsilon, alpha, gamma, async_update, T, Tmax, q, 
         state = next_state
         # t <- t + 1 and T <- T + 1
         t += 1
-        print(T.value)
 
         T.value += 1
         # if t % I_AsyncUpdate == 0 or s is terminal then
@@ -69,13 +69,20 @@ def acculmulate_q(q, global_q_matrix, child_conn, T, Tmax):
 
         time.sleep(random() * 0.1)
 
+def to_numpy_array(mp_arr):
+    return np.frombuffer(mp_arr.get_obj())
 
 def async_manager(threads, epsilon, alpha, gamma, async_update, Tmax):
     # Assume global shared Q(s, a) function values, and counter T = 0
     T = Value('i', 0, lock=False)
     r_matrix = ql.make_transition_matrix(ql.state_grid)
     # Initialize global Q(s, a)
+
+    global_q_matrix = Array(ctypes.c_double, r_matrix.size)
+
+
     global_q_matrix = np.zeros_like(r_matrix).astype(float)
+
 
     q = Queue()
 

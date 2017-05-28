@@ -1,7 +1,6 @@
 from src.async_qlearning import *
 
 
-
 def test_multiprocess_queue():
     q = Queue()
     local_q = np.array([1])
@@ -28,3 +27,8 @@ def test_multiprocess_queue():
     global_q = parent_conn.recv()
 
     assert global_q == np.array([3])
+
+def test_c_to_np_array_conversion():
+    test_array = np.array([[1, 2],
+                        [3, 4]])
+    assert to_numpy_array(Array(ctypes.c_double, test_array)) == test_array
