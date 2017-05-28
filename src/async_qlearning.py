@@ -1,11 +1,11 @@
-from multiprocessing import Process, Queue, Pipe, Value, Lock, Array
+from multiprocessing import Process, Queue, Value, Array, Manager
 import numpy as np
 import src.qlearning_numpy as ql
 import time
 from random import random
 import ctypes
 
-def qlearning_worker(r_matrix, epsilon, alpha, gamma, async_update, T, Tmax, q, parent_conn, lock):
+def qlearning_worker(r_matrix, epsilon, alpha, gamma, async_update, T, Tmax, q, global_q_matrix):
     # Initialize thread step count t <- 1 (Not sure why this starts at 1)
     t = 1
     delta_q_matrix = np.zeros_like(r_matrix).astype(float)
@@ -16,14 +16,10 @@ def qlearning_worker(r_matrix, epsilon, alpha, gamma, async_update, T, Tmax, q, 
 
     while T.value <= Tmax:
         # Choose action from state s using \epsilon-greedy policy
-        global_q_matrix = None
+        with global_q_matrix.get_lock():
+            np_q = to_numpy_array(global_q_matrix, r_matrix.shape)
 
-        while not global_q_matrix:
-            global_q_matrix = receive_global_q(parent_conn, lock)
-            if not global_q_matrix:
-                time.sleep(random() * 0.1)
-
-        action = ql.get_epsilon_greedy_action(epsilon, global_q_matrix, state)
+        action = ql.get_epsilon_greedy_action(epsilon, np_q, state)
         # Take action a, observe r, s'
         reward = ql.peek_reward(r_matrix, state, action)
         next_state = ql.peek_next_state(r_matrix, state, action)
@@ -36,6 +32,7 @@ def qlearning_worker(r_matrix, epsilon, alpha, gamma, async_update, T, Tmax, q, 
         t += 1
 
         T.value += 1
+        print(T.value)
         # if t % I_AsyncUpdate == 0 or s is terminal then
         if t % async_update == 0 or state != ql.index_1d(0, 8):
             # Perform async update
@@ -44,6 +41,8 @@ def qlearning_worker(r_matrix, epsilon, alpha, gamma, async_update, T, Tmax, q, 
             delta_q_matrix = np.zeros_like(r_matrix).astype(float)
             if state != ql.index_1d(0, 8):
                 state = start_state
+
+    print("returning")
 
 
 def receive_global_q(parent_conn, lock):
@@ -56,82 +55,74 @@ def receive_global_q(parent_conn, lock):
 
 
 def send_local_q(q, delta_q_matrix):
-    print("Sending Delta")
     q.put(delta_q_matrix)
 
 
-def acculmulate_q(q, global_q_matrix, child_conn, T, Tmax):
+def acculmulate_q(q, global_q_matrix, T, Tmax):
     while T.value <= Tmax:
         if not q.empty():
             local_q_matrix = q.get()
-            global_q_matrix += local_q_matrix
-            child_conn.send(global_q_matrix)
+            with global_q_matrix.get_lock():
+                q_np = to_numpy_array(global_q_matrix, local_q_matrix.shape)
+                q_np += local_q_matrix
+                global_q_matrix = to_mp_array(q_np)
 
-        time.sleep(random() * 0.1)
+    print(q.empty())
+    print("consumer returning")
+    return
+
 
 def to_mp_array(np_array):
     mp_array = Array(ctypes.c_double, np_array.flatten())
-    print(mp_array)
     return mp_array
+
 
 def to_numpy_array(mp_array, dim):
     np_array = np.frombuffer(mp_array.get_obj())
     return np_array.reshape(*dim)
 
-def async_manager(threads, epsilon, alpha, gamma, async_update, Tmax):
+
+def async_manager(processes, epsilon, alpha, gamma, async_update, Tmax):
     # Assume global shared Q(s, a) function values, and counter T = 0
     T = Value('i', 0, lock=False)
     r_matrix = ql.make_transition_matrix(ql.state_grid)
     # Initialize global Q(s, a)
 
-    global_q_matrix = Array(ctypes.c_double, r_matrix.size)
+    global_q_matrix_np = np.zeros_like(r_matrix).astype(float)
 
+    global_q_matrix = to_mp_array(global_q_matrix_np)
 
-    global_q_matrix = np.zeros_like(r_matrix).astype(float)
+    manager = Manager()
+    q = manager.Queue()
 
-
-    q = Queue()
-
-    parent_conn, child_conn = Pipe()
-    lock = Lock()
-
-    parent_conn.send(global_q_matrix)
+    consumer = Process(target=acculmulate_q, args=(q, global_q_matrix,
+                                                   T, Tmax))
 
 
     producer1 = Process(target=qlearning_worker, args=(r_matrix, epsilon,
                                                       alpha, gamma,
                                                       async_update, T,
-                                                      Tmax, q, parent_conn,
-                                                      lock))
+                                                      Tmax, q, global_q_matrix))
+
     producer1.start()
 
     producer2 = Process(target=qlearning_worker, args=(r_matrix, epsilon,
                                                       alpha, gamma,
                                                       async_update, T,
-                                                      Tmax, q, parent_conn,
-                                                      lock))
+                                                      Tmax, q, global_q_matrix))
+
     producer2.start()
 
-    consumer = Process(target=acculmulate_q, args=(q, global_q_matrix,
-                                                   child_conn, T, Tmax))
     consumer.start()
 
-    while T.value <= Tmax:
-        time.sleep(random())
-
-    global_q_matrix = parent_conn.recv()
-
+    consumer.join()
     producer1.join()
     producer2.join()
-    consumer.join()
 
-    return global_q_matrix
-
-
-
+    return to_numpy_array(global_q_matrix, r_matrix.shape)
 
 if __name__ == '__main__':
-    print(async_manager(threads=2,
+    print(async_manager(processes=2,
                   epsilon=0.1,
                   alpha=0.1,
                   gamma=0.95,
