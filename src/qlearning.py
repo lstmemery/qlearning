@@ -51,6 +51,20 @@ def make_transition_matrix(matrix):
 
 
 def index_1d(row, col):
+    """For a given row and column in a grid world, return the row that cell would appear on in the transition matrix.
+
+    Parameters
+    ----------
+    row : int
+        The row number. Indexing starts at 0.
+    col : int
+        The column number. Indexing starts at 0.
+
+    Returns
+    -------
+    transition_row : int
+        The row on the transition matrix the row and column would appear on.
+    """
     max_cols = 9
     return row * max_cols + col
 
