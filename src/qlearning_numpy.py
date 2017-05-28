@@ -119,3 +119,4 @@ if __name__ == '__main__':
     q, iterations = qlearning(state_grid, 100, epsilon=0.1, alpha=0.1, gamma=0.95, updated_grid=updated_grid)
     print(q)
     print(iterations)
+    print(sum(iterations)/len(iterations))

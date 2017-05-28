@@ -5,7 +5,7 @@ import ctypes
 
 
 def update_delta_q(q, state, action, gamma, reward, next_state, global_q_state):
-    max_next_step = max(q[next_state, :])
+    max_next_step = max(global_q_state[next_state, :])
     next_q = q[state, action] + (reward + gamma * max_next_step - global_q_state[state, action])
     return next_q
 
@@ -46,12 +46,10 @@ def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, q, global_
             # clear updates \DeltaQ(s', a')
             delta_q_matrix = np.zeros_like(r_matrix).astype(float)
             if state == ql.index_1d(0, 8):
-                print("reached goal")
                 state = start_state
                 total_reward += 1
 
-    print(total_reward)
-    print(t)
+    print(t / total_reward)
 
 
 def send_local_q(q, delta_q_matrix):
