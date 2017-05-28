@@ -33,6 +33,8 @@ def qlearning_worker(r_matrix, epsilon, alpha, gamma, async_update, T, Tmax, q, 
         state = next_state
         # t <- t + 1 and T <- T + 1
         t += 1
+        print(T.value)
+
         T.value += 1
         # if t % I_AsyncUpdate == 0 or s is terminal then
         if t % async_update == 0 or state != ql.index_1d(0, 8):
@@ -47,25 +49,20 @@ def qlearning_worker(r_matrix, epsilon, alpha, gamma, async_update, T, Tmax, q, 
 def receive_global_q(parent_conn, lock):
     try:
         lock.acquire()
-        return parent_conn.recv()
+        global_q = parent_conn.recv()
+        return global_q
     finally:
         lock.release()
 
 
 def send_local_q(q, delta_q_matrix):
+    print("Sending Delta")
     q.put(delta_q_matrix)
 
 
-def acculmulate_q(q, parent_conn, child_conn, T, Tmax, lock):
+def acculmulate_q(q, global_q_matrix, child_conn, T, Tmax):
     while T.value <= Tmax:
         if not q.empty():
-            global_q_matrix = None
-
-            while not global_q_matrix:
-                global_q_matrix = receive_global_q(parent_conn, lock)
-                if not global_q_matrix:
-                    time.sleep(random() * 0.1)
-
             local_q_matrix = q.get()
             global_q_matrix += local_q_matrix
             child_conn.send(global_q_matrix)
@@ -75,7 +72,7 @@ def acculmulate_q(q, parent_conn, child_conn, T, Tmax, lock):
 
 def async_manager(threads, epsilon, alpha, gamma, async_update, Tmax):
     # Assume global shared Q(s, a) function values, and counter T = 0
-    T = Value('i', 0)
+    T = Value('i', 0, lock=False)
     r_matrix = ql.make_transition_matrix(ql.state_grid)
     # Initialize global Q(s, a)
     global_q_matrix = np.zeros_like(r_matrix).astype(float)
@@ -102,8 +99,8 @@ def async_manager(threads, epsilon, alpha, gamma, async_update, Tmax):
                                                       lock))
     producer2.start()
 
-    consumer = Process(target=acculmulate_q, args=(q, parent_conn,
-                                                   child_conn, T, Tmax, lock))
+    consumer = Process(target=acculmulate_q, args=(q, global_q_matrix,
+                                                   child_conn, T, Tmax))
     consumer.start()
 
     while T.value <= Tmax:
