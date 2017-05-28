@@ -1,5 +1,5 @@
 from hyperopt import hp, fmin, tpe
-import qlearning_numpy as ql
+import qlearning as ql
 
 
 

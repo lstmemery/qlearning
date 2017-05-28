@@ -1,6 +1,6 @@
 from multiprocessing import Process, Value, Array, Manager
 import numpy as np
-import src.qlearning_numpy as ql
+import src.qlearning as ql
 import ctypes
 
 

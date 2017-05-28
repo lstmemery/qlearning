@@ -1,6 +1,6 @@
 import pytest
 
-from src.qlearning_numpy import *
+from src.qlearning import *
 
 
 def test_q_learning_size():
