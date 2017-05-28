@@ -31,4 +31,4 @@ def test_multiprocess_queue():
 def test_c_to_np_array_conversion():
     test_array = np.array([[1, 2],
                         [3, 4]])
-    assert to_numpy_array(Array(ctypes.c_double, test_array)) == test_array
+    assert to_numpy_array(to_mp_array(test_array), test_array.shape).all() == test_array.all()

@@ -69,8 +69,14 @@ def acculmulate_q(q, global_q_matrix, child_conn, T, Tmax):
 
         time.sleep(random() * 0.1)
 
-def to_numpy_array(mp_arr):
-    return np.frombuffer(mp_arr.get_obj())
+def to_mp_array(np_array):
+    mp_array = Array(ctypes.c_double, np_array.flatten())
+    print(mp_array)
+    return mp_array
+
+def to_numpy_array(mp_array, dim):
+    np_array = np.frombuffer(mp_array.get_obj())
+    return np_array.reshape(*dim)
 
 def async_manager(threads, epsilon, alpha, gamma, async_update, Tmax):
     # Assume global shared Q(s, a) function values, and counter T = 0
