@@ -5,9 +5,11 @@ from keras.models import Sequential
 from keras.layers import Convolution2D, Dense, Activation
 import numpy as np
 import random
+import tensorflow as tf
 
 # I worked through this tutorial https://keon.io/deep-q-learning/
 # That tutorial is not asynchronous, though
+# This code closely resembles what I'm attempting
 
 
 class DQNAgent(object):
@@ -79,7 +81,6 @@ if __name__ == '__main__':
         state = np.reshape(state, [1, 4])
 
         # time_t represents each frame of the game
-        # Our goal is to keep the pole upright as long as possible until score of 500
         # the more time_t the more score
         for time_t in range(500):
             # turn this on if you want to render
