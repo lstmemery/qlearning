@@ -13,8 +13,10 @@ def test_multiprocess_queue():
 
     consumer = Process(target=acculmulate_q, args=(q, global_q, child_conn))
     consumer.start()
-    global_q = parent_conn.recv()
+
     producer.join()
     consumer.join()
+
+    global_q = parent_conn.recv()
 
     assert global_q == np.array([3])
