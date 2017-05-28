@@ -1,5 +1,4 @@
 import numpy as np
-import hyperopt as hp
 
 from random import random, randint
 

@@ -1,4 +1,4 @@
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, Pipe
 import numpy as np
 import src.qlearning_numpy as ql
 
@@ -30,10 +30,10 @@ def send_local_q(q, delta_q_matrix):
     q.put(delta_q_matrix)
 
 
-def acculmulate_q(q):
-    global global_q_matrix
+def acculmulate_q(q, global_q_matrix, child_conn):
     local_q_matrix = q.get()
     global_q_matrix += local_q_matrix
+    child_conn.send(global_q_matrix)
 
 def async_qlearning(grid, epsilon, async_update, Tmax):
     process_queue = Queue(10)
