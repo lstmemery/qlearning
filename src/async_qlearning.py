@@ -1,16 +1,16 @@
-import threading
+from multiprocessing import Process, Queue
 import numpy as np
 import src.qlearning_numpy as ql
 
-from Queue import Queue
 
-
-def threaded_qlearning(r_matrix, state, epsilon, alpha, gamma, async_update):
+def threaded_qlearning(r_matrix, state, epsilon, alpha, gamma, async_update, Tmax, q):
+    # Initialize thread step count t <- 1
     t = 1
     global global_q_matrix
     delta_q_matrix = np.zeros_like(r_matrix).astype(float)
-    while t % async_update == 0 and state != ql.index_1d(0, 8):
+    global T
 
+    while T <= Tmax:
         # Choose action from state s using \epsilon-greedy policy
         action = ql.get_epsilon_greedy_action(epsilon, global_q_matrix, state)
         # Take action a, observe r, s'
@@ -21,23 +21,32 @@ def threaded_qlearning(r_matrix, state, epsilon, alpha, gamma, async_update):
         delta_q_matrix[state, action] = updated_q
         state = next_state
         t += 1
+        T += 1
+        if t % async_update == 0 or state != ql.index_1d(0, 8):
+            send_local_q(q, delta_q_matrix)
+            delta_q_matrix = np.zeros_like(r_matrix).astype(float)
 
-    return delta_q_matrix
+def send_local_q(q, delta_q_matrix):
+    q.put(delta_q_matrix)
 
+
+def acculmulate_q(q):
+    global global_q_matrix
+    local_q_matrix = q.get()
+    global_q_matrix += local_q_matrix
 
 def async_qlearning(grid, epsilon, async_update, Tmax):
-    thread_queue = Queue(10)
-    T = 0
+    process_queue = Queue(10)
     global T
     while T < Tmax:
         # Assume global shared Q(s, a) function values, and counter T = 0
         r_matrix = ql.make_transition_matrix(grid)
         global_q_matrix = np.zeros_like(r_matrix).astype(float)
-        # Initialize thread step count t <- 1
-        t = 1
+
         # Initialize global Q(s, a)
     # Initialize thread updates \Delta Q(s, a)
-        threading.Thread(target=threaded_qlearning).start()
+        pool = Process()
+
     # Get initial state s
     # repeat
 
@@ -50,3 +59,8 @@ def async_qlearning(grid, epsilon, async_update, Tmax):
             # clear updates \DeltaQ(s', a')
     # until T > T_max
     return global_q_matrix
+
+if __name__ == '__main__':
+    T = 0
+    r_matrix = ql.make_transition_matrix(ql.state_grid)
+    global_q_matrix = np.zeros_like(r_matrix).astype(float)
