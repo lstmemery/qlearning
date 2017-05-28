@@ -3,21 +3,41 @@ import numpy as np
 from random import random, randint
 
 state_grid = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 1],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [-1, -1, -1, -1, -1, -1, -1, -1, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0]])
+                       [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                       [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                       [-1, -1, -1, -1, -1, -1, -1, -1, 0],
+                       [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                       [0, 0, 0, 0, 0, 0, 0, 0, 0]])
 
 updated_grid = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 1],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, -1, -1, -1, -1, -1, -1, -1, -1],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0]])
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, -1, -1, -1, -1, -1, -1, -1, -1],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0]])
 
 
 def make_transition_matrix(matrix):
+    """Derive a transition matrix from a 2D array representing a grid world.
+
+     By convention, the four transitions (up, right, down, and left) are represented by columns 0 to 3, respectively.
+     The value -1 represents an impassible value. The value 1 represents the reward value.
+
+    Parameters
+    ----------
+    matrix : ndarray of ints
+        A 2D array representing all possible transitions.
+
+    Returns
+    -------
+    transition_matrix : ndarray of ints
+        An N X 4 2D array where N is the total size of matrix.
+
+    Notes
+    -----
+    It would be possible to remove the impassible values from the transition matrix but I chose not to for ease of
+    indexing.
+    """
     padded_matrix = np.pad(matrix, pad_width=1, mode="constant", constant_values=-1)
 
     up = np.roll(padded_matrix, shift=1, axis=0)[1:-1, 1:-1].flatten()
@@ -117,4 +137,4 @@ if __name__ == '__main__':
     q, iterations = qlearning(state_grid, 100, epsilon=0.05, alpha=0.5, gamma=0.95, updated_grid=updated_grid)
     print(q)
     print(iterations)
-    print(sum(iterations)/len(iterations))
+    print(sum(iterations) / len(iterations))
