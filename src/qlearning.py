@@ -70,6 +70,20 @@ def index_1d(row, col):
 
 
 def reverse_index_1d(state):
+    """The inverse of index_1d. From an row number in the transition matrix return the row and column in the grid world.
+
+    Parameters
+    ----------
+    state : int
+        An integer representing the row in the transition matrix.
+
+    Returns
+    -------
+    row : int
+        The row in the grid world.
+    column : int
+        The column in the grid world.\
+    """
     max_cols = 9
     row = state / max_cols
     col = state % max_cols
