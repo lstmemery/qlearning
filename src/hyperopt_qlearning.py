@@ -10,7 +10,7 @@ def objective(params):
                                  alpha=params['alpha'],
                                  gamma=0.95,
                                  updated_grid=ql.updated_grid)
-    return sum(iterations)/len(iterations)
+    return sum(iterations[-5:])/5
 
 
 if __name__ == '__main__':
@@ -20,4 +20,8 @@ if __name__ == '__main__':
     best = fmin(objective, space=space, algo=tpe.suggest, max_evals=100)
     print(best)
 
+    # Best Overall
     # {'alpha': 0.45, 'epsilon': 0.55}
+
+    # Best of the last 5 rounds
+    # {'alpha': 0.5, 'epsilon': 0.05}

@@ -118,10 +118,13 @@ def async_manager(processes, epsilon, alpha, gamma, async_update, Tmax):
 
     return q_np
 
+#TODO: Change R after 1000 steps
+#TODO: Need graphs as proof
+
 if __name__ == '__main__':
     print(async_manager(processes=2,
-                  epsilon=0.1,
-                  alpha=0.1,
+                  epsilon=0.55,
+                  alpha=0.45,
                   gamma=0.95,
                   async_update=5,
                   Tmax=10000))

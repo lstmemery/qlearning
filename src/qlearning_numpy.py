@@ -113,10 +113,8 @@ def get_epsilon_greedy_action(epsilon, q_matrix, state):
     return action
 
 
-#TODO: Can use hyperopt later
-
 if __name__ == '__main__':
-    q, iterations = qlearning(state_grid, 100, epsilon=0.55, alpha=0.45, gamma=0.95, updated_grid=updated_grid)
+    q, iterations = qlearning(state_grid, 100, epsilon=0.05, alpha=0.5, gamma=0.95, updated_grid=updated_grid)
     print(q)
     print(iterations)
     print(sum(iterations)/len(iterations))
