@@ -129,6 +129,22 @@ def peek_next_state(grid, state, action):
 
 
 def peek_reward(grid, state, action):
+    """For a given grid, state, and action return the reward in the transition matrix.
+
+    Parameters
+    ----------
+    grid : ndarray of ints
+        The transition matrix.
+    state : int
+        The current state of the transition matrix (represented as a row number)
+    action : int
+        The action being observed. 0 = up. 1 = right. 2 = down. 3 = right.
+
+    Returns
+    -------
+    reward : int
+        The reward in the transition matrix
+    """
     return grid[state, action]
 
 
