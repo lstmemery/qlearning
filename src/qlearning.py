@@ -175,7 +175,8 @@ def update_q(q, state, action, alpha, gamma, reward, next_state):
 
     Returns
     -------
-    q_value : The value the Q matrix will be updated with
+    q_value : float
+        The value the Q matrix will be updated with
 
     References
     ----------
@@ -188,6 +189,38 @@ def update_q(q, state, action, alpha, gamma, reward, next_state):
 
 
 def qlearning(grid, episodes, epsilon, alpha, gamma, updated_grid):
+    """The q-learning algorithm.
+
+    From a grid, determine the optimal path to a reward by discovering the Q function that describes the relationship
+    between states and actions.
+
+    Parameters
+    ----------
+    grid : ndarray of ints
+        The 2D grid world.
+    episodes : int
+        The number of successes before terminating the algorithm.
+    epsilon : float
+        The probability of choosing the next action randomly. Otherwise, choose the Q-optimal next step.
+    alpha : float
+        The learning rate. This determines how much each step is weighted.
+    gamma : float
+        The discount factor. The weight that the algorithm will consider future rewards. gamma = 0 is entirely greedy.
+        Values higher than 1 can cause the algorithm to diverge.[1]
+    updated_grid : ndarray of ints
+        A new 2D grid world. Updated grid world occurs at 1000.
+
+    Returns
+    -------
+    q_matrix : ndarray of floats
+        The transition matrix that approximates the Q function of the grid world.
+    steps_to_goal_list : list of ints
+        The number of steps it took each iteration to get to the reward.
+
+    References
+    ----------
+    1. Q-learning. In: Wikipedia [Internet]. 2017 [cited 2017 May 29]. Available from: https://en.wikipedia.org/w/index.php?title=Q-learning&oldid=762556833
+    """
     r_matrix = make_transition_matrix(grid)
     # Initialize Q
     q_matrix = np.zeros_like(r_matrix).astype(float)
