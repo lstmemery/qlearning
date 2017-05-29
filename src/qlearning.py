@@ -256,6 +256,28 @@ def qlearning(grid, episodes, epsilon, alpha, gamma, updated_grid):
 
 
 def get_epsilon_greedy_action(epsilon, q_matrix, state):
+    """Choose the next action in the q-learning algorithm.
+
+    Parameters
+    ----------
+    epsilon : float
+        The probability of choosing the next action randomly. Otherwise, choose the Q-optimal next step.
+    q_matrix : ndarray of floats
+        The 2D matrix representing the Q-function.
+    state : int
+        The current state, represented as a row number in the transition matrix.
+
+    Returns
+    -------
+    action : int
+        The next action to be taken, represented as a column number in the transition matrix.
+
+
+    Notes
+    -----
+    If there are multiple q-optimal actions (i.e. a tie), this function selects randomly between the optimal values.
+
+    """
     if random() < epsilon:
         action = randint(0, 3)
     # With probability 1 - \epsilon choose argmax Q
