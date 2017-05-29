@@ -1,3 +1,4 @@
+# coding=utf-8
 import numpy as np
 
 from random import random, randint
@@ -149,6 +150,38 @@ def peek_reward(grid, state, action):
 
 
 def update_q(q, state, action, alpha, gamma, reward, next_state):
+    """Update the Q matrix according to formula:
+
+    .. math::Q(s, a) ← Q(s, a) + α r + γ max a Q(s 0 , a) − Q(s, a)
+
+
+    Parameters
+    ----------
+    q : ndarray of floats
+        The 2D matrix the represents the Q function.
+    state : int
+        The current state of the transition matrix.
+    action : int
+        The action taken.
+    alpha : float
+        The learning rate. This determines how much each step is weighted.
+    gamma : float
+        The discount factor. The weight that the algorithm will consider future rewards. gamma = 0 is entirely greedy.
+        Values higher than 1 can cause the algorithm to diverge.[1]
+    reward : int
+        The reward in the transition matrix
+    next_state : int
+        The next state of the transition matrix.
+
+    Returns
+    -------
+    q_value : The value the Q matrix will be updated with
+
+    References
+    ----------
+    1. Q-learning. In: Wikipedia [Internet]. 2017 [cited 2017 May 29]. Available from: https://en.wikipedia.org/w/index.php?title=Q-learning&oldid=762556833
+
+    """
     max_next_step = max(q[next_state, :])
     next_q = q[state, action] + alpha * (reward + gamma * max_next_step - q[state, action])
     return next_q
