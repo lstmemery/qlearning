@@ -232,7 +232,8 @@ def get_epsilon_greedy_action(epsilon, q_matrix, state):
 
 
 if __name__ == '__main__':
-    q, iterations = qlearning(state_grid, 100, epsilon=0.05, alpha=0.5, gamma=0.95, updated_grid=updated_grid)
+    np.set_printoptions(suppress=True)
+    q, iterations = qlearning(state_grid, 1000, epsilon=0.05, alpha=0.5, gamma=0.95, updated_grid=updated_grid)
     print(q)
     print(iterations)
     print(sum(iterations) / len(iterations))

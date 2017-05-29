@@ -1,3 +1,4 @@
+# coding=utf-8
 from multiprocessing import Process, Value, Array, Manager
 import numpy as np
 import src.qlearning as ql
@@ -5,6 +6,24 @@ import ctypes
 
 
 def update_delta_q(q, state, action, gamma, reward, next_state, global_q_state):
+    """
+
+    ∆Q(s, a) ← ∆Q(s, a) + r + γ max a Q(s 0 , a) − Q(s, a)
+
+    Parameters
+    ----------
+    q
+    state
+    action
+    gamma
+    reward
+    next_state
+    global_q_state
+
+    Returns
+    -------
+
+    """
     max_next_step = max(global_q_state[next_state, :])
     next_q = q[state, action] + (reward + gamma * max_next_step - global_q_state[state, action])
     return next_q
@@ -21,6 +40,8 @@ def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, q, global_
     state = start_state
 
     while T.value <= Tmax:
+        if T.value > 1000:
+            r_matrix = updated_matrix
         # Choose action from state s using \epsilon-greedy policy
         with global_q_matrix.get_lock():
             np_q = to_numpy_array(global_q_matrix, r_matrix.shape)
@@ -38,7 +59,7 @@ def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, q, global_
         t += 1
 
         T.value += 1
-        # print(ql.reverse_index_1d(state))
+
         # if t % I_AsyncUpdate == 0 or s is terminal then
         if t % async_update == 0 or state == ql.index_1d(0, 8):
             # Perform async update
@@ -49,6 +70,7 @@ def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, q, global_
                 state = start_state
                 total_reward += 1
 
+    print(total_reward)
     print(t / total_reward)
 
 
@@ -62,7 +84,7 @@ def acculmulate_q(q, global_q_matrix, T, Tmax, alpha):
         local_q_matrix = q.get()
         with global_q_matrix.get_lock():
             q_np = to_numpy_array(global_q_matrix, local_q_matrix.shape)
-            q_np += alpha * local_q_matrix
+            q_np[local_q_matrix.nonzero()] += alpha * local_q_matrix[local_q_matrix.nonzero()]
             global_q_matrix = to_mp_array(q_np)
 
     q.put(q_np)
@@ -118,10 +140,12 @@ def async_manager(processes, epsilon, alpha, gamma, async_update, Tmax):
 
     return q_np
 
-#TODO: Change R after 1000 steps
-#TODO: Need graphs as proof
+# TODO: Need graphs as proof
+# TODO: Pool instead of processes
 
 if __name__ == '__main__':
+    updated_matrix = ql.make_transition_matrix(ql.updated_grid)
+
     print(async_manager(processes=2,
                   epsilon=0.55,
                   alpha=0.45,

@@ -9,6 +9,8 @@
 
 [Hyperparamater Tuning](./src/hyperopt.py)
 
+[Graphs for Q Learning](./src/qlearning.ipynb)
+
 ## Installation
 
 With anaconda: `conda env -f environment.yml`
