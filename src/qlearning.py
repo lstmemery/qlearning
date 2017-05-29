@@ -91,6 +91,27 @@ def reverse_index_1d(state):
 
 
 def peek_next_state(grid, state, action):
+    """For a given grid, state, and action return the next state in the transition matrix.
+
+    If the next state is less than 0, stay in the same state.
+
+    Parameters
+    ----------
+    grid : ndarray of ints
+        The transition matrix.
+    state : int
+        The current state of the transition matrix (represented as a row number)
+    action : int
+        The action being observed. 0 = up. 1 = right. 2 = down. 3 = right.
+
+    Returns
+    -------
+    next_state : int
+        The next state in the transition matrix.
+    """
+    assert state <= grid.shape[0], "State larger than grid size"
+    assert action <= grid.shape[1], "Action larger than grid size"
+
     if grid[state, action] < 0:
         return state
     else:
