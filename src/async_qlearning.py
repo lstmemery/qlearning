@@ -1,14 +1,16 @@
 # coding=utf-8
-from multiprocessing import Process, Value, Array, Manager, Lock, Pool
-import numpy as np
-import src.qlearning as ql
 import ctypes
+from multiprocessing import Process, Value, Array, Manager, Lock
 from random import random, randint
+
+import numpy as np
+
+import src.qlearning as ql
 
 updated_matrix = ql.make_transition_matrix(ql.updated_grid)
 
 
-def update_delta_q(local_q_matrix, state, action, gamma, reward, next_state, global_q_state):
+def update_delta_q(local_q_matrix, state, action, gamma, reward, next_state, global_q_state, raw_array):
     """Update a local Q matrix, based on the the state and next state of the global Q matrix.
 
     ∆Q(s, a) ← ∆Q(s, a) + r + γ max a Q(s 0 , a) − Q(s, a)
@@ -46,7 +48,9 @@ def update_delta_q(local_q_matrix, state, action, gamma, reward, next_state, glo
     Unlike the synchronous version, this version does not require a. Since a is the same for all local Q updates,
      it can be applied when the change to the local Q matrix are applied to the global Q matrix.
     """
-    max_next_step = max(global_q_state[next_state, :])
+    with raw_array.get_lock():
+        max_next_step = max(global_q_state[next_state, :])
+
     next_q = local_q_matrix[state, action] + (reward + (gamma * max_next_step) - global_q_state[state, action])
     return next_q
 
@@ -73,7 +77,7 @@ def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, alpha, glo
         # Take action a, observe r, s'
         reward = ql.peek_reward(r_matrix, state, action)
         next_state = ql.peek_next_state(r_matrix, state, action)
-        updated_q = update_delta_q(delta_q_matrix, state, action, gamma, reward, next_state, global_q_matrix)
+        updated_q = update_delta_q(delta_q_matrix, state, action, gamma, reward, next_state, global_q_matrix, raw_array)
         # Accumulate updates:
         delta_q_matrix[state, action] += updated_q
         # s <- s'

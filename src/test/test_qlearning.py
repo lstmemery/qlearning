@@ -75,6 +75,7 @@ def test_q_learning():
     average_last_5 = sum(step_list[-5:]) / len(step_list[-5:])
     assert average_first_5 > 4 * average_last_5
 
+
 @pytest.fixture()
 def grid():
     return make_transition_matrix(state_grid)
