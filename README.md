@@ -15,6 +15,38 @@
 
 With Anaconda: `conda env -f environment.yml`
 
+## How to Run
+
+### Q Learning
+
+`python src/q_learning.py`
+
+```
+Options:
+  --episodes INTEGER   Number of Successful Runs.
+  -e, --epsilon FLOAT  Probability of choosing the next action randomly (vs.
+                       greedily).
+  -a, --alpha FLOAT    Learning Rate.
+  -g, --gamma FLOAT    Discount Factor.
+  --help               Show this message and exit.
+```
+
+### Asynchronous Q Learning
+
+`python src/async_qlearning.py`
+
+```
+Options:
+  -n, --processes INTEGER  Number of Processes to run.
+  -e, --epsilon FLOAT      Probability of choosing the next action randomly
+                           (vs. greedily).
+  -a, --alpha FLOAT        Learning Rate.
+  -g, --gamma FLOAT        Discount Factor.
+  -u, --update INTEGER     Number of steps until update.
+  -s, --steps INTEGER      Total number of steps.
+  --help                   Show this message and exit.
+```
+
 ## Run Tests
 
 `pytest src/test`
