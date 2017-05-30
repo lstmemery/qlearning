@@ -39,3 +39,32 @@ def test_get_async_epsilon_greedy_action():
     state = 0
     epsilon = 0.01
     assert get_async_epsilon_greedy_action(epsilon, q_matrix, state) == 1
+
+
+def test_qlearning_worker_step_queue():
+    r_matrix = ql.make_transition_matrix(ql.state_grid)
+    epsilon = 0.30
+    gamma = 0.95
+    async_update = 5
+    T = Value('i', 0)
+    Tmax = 1000
+    alpha = 0.30
+
+    manager = Manager()
+
+    lock = Lock()
+    step_queue = manager.Queue()
+
+    raw_array = Array(ctypes.c_double, r_matrix.shape[0] * r_matrix.shape[1], lock=lock)
+    shared_array = np.ctypeslib.as_array(raw_array.get_obj())
+    global_q_matrix = shared_array.reshape(r_matrix.shape)
+
+    qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, alpha, global_q_matrix, step_queue,
+                     raw_array)
+
+    step_list = []
+
+    while not step_queue.empty():
+        step_list.append(step_queue.get())
+
+    assert len(step_list) >= 1
