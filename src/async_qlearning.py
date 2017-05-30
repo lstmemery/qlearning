@@ -5,7 +5,7 @@ from random import random, randint
 
 import numpy as np
 
-import src.qlearning as ql
+import qlearning as ql
 
 updated_matrix = ql.make_transition_matrix(ql.updated_grid)
 
@@ -169,8 +169,6 @@ def async_manager(processes, epsilon, alpha, gamma, async_update, Tmax):
         step_list.append(step_queue.get())
 
     return shared_array, step_list
-
-# TODO: Need graphs as proof
 
 if __name__ == '__main__':
     q_matrix, step_list = async_manager(processes=6,
