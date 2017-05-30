@@ -65,6 +65,16 @@ def test_update_q(grid):
     assert q[state, action] == alpha
 
 
+# noinspection PyTypeChecker
+def test_q_learning():
+    """This is an integration test. It determines whether there was a significant decrease in steps until
+    completion.
+    """
+    _, step_list = qlearning(state_grid, 1000, epsilon=0.05, alpha=0.5, gamma=0.95, updated_grid=updated_grid)
+    average_first_5 = sum(step_list[:5]) / len(step_list[:5])
+    average_last_5 = sum(step_list[-5:]) / len(step_list[-5:])
+    assert average_first_5 > 4 * average_last_5
+
 @pytest.fixture()
 def grid():
     return make_transition_matrix(state_grid)
