@@ -102,7 +102,7 @@ def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, alpha, glo
                 total_reward += 1
 
 
-def get_async_epsilon_greedy_action(epsilon, q_matrix, state, raw_matrix):
+def get_async_epsilon_greedy_action(epsilon, q_matrix, state, raw_array):
     """Choose the next action in the q-learning algorithm.
 
     Parameters
@@ -113,6 +113,8 @@ def get_async_epsilon_greedy_action(epsilon, q_matrix, state, raw_matrix):
         The 2D matrix representing the Q-function.
     state : int
         The current state, represented as a row number in the transition matrix.
+    raw_array : multiprocessing array
+        The multiprocessing array equivalent of q_matrix. This is required for it's lock.
 
     Returns
     -------
@@ -129,7 +131,7 @@ def get_async_epsilon_greedy_action(epsilon, q_matrix, state, raw_matrix):
         action = randint(0, 3)
     # With probability 1 - \epsilon choose argmax Q
     else:
-        with raw_matrix.get_lock():
+        with raw_array.get_lock():
             action = np.random.choice(np.where(q_matrix[state] == q_matrix[state].max())[0])
     return action
 
@@ -142,7 +144,6 @@ def async_manager(processes, epsilon, alpha, gamma, async_update, Tmax):
 
     manager = Manager()
 
-    q = manager.Queue()
     lock = Lock()
 
     shared_array_base = Array(ctypes.c_double, r_matrix.shape[0] * r_matrix.shape[1], lock=lock)
