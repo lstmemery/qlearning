@@ -1,3 +1,5 @@
+from random import seed
+
 import pytest
 
 from src.qlearning import *
@@ -74,6 +76,15 @@ def test_q_learning():
     average_first_5 = sum(step_list[:5]) / len(step_list[:5])
     average_last_5 = sum(step_list[-5:]) / len(step_list[-5:])
     assert average_first_5 > 4 * average_last_5
+
+
+def test_get_async_epsilon_greedy_action():
+    q_matrix = np.array([[0.1, 0.2],
+                         [0.3, 0.4]])
+    seed(0)
+    state = 0
+    epsilon = 0.01
+    assert get_epsilon_greedy_action(epsilon, q_matrix, state) == 1
 
 
 @pytest.fixture()

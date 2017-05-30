@@ -135,7 +135,7 @@ def get_async_epsilon_greedy_action(epsilon, q_matrix, state):
 
 def async_manager(processes, epsilon, alpha, gamma, async_update, Tmax):
     # Assume global shared Q(s, a) function values, and counter T = 0
-    T = Value('i', 0, lock=False)
+    T = Value('i', 0)
     r_matrix = ql.make_transition_matrix(ql.state_grid)
     # Initialize global Q(s, a)
 
