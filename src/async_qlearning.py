@@ -40,6 +40,8 @@ def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, alpha, glo
     delta_q_matrix = np.zeros_like(r_matrix).astype(float)
 
     start_state = ql.index_1d(5, 3)
+    final_state = ql.index_1d(0, 8)
+
     # Get initial state s
     state = start_state
 
@@ -63,14 +65,14 @@ def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, alpha, glo
         T.value += 1
 
         # if t % I_AsyncUpdate == 0 or s is terminal then
-        if t % async_update == 0 or state == ql.index_1d(0, 8):
+        if t % async_update == 0 or state == final_state:
             # Perform async update
             with raw_array.get_lock():
                 global_q_matrix[delta_q_matrix.nonzero()] += alpha * delta_q_matrix[delta_q_matrix.nonzero()]
 
             # clear updates \DeltaQ(s', a')
             delta_q_matrix = np.zeros_like(r_matrix).astype(float)
-            if state == ql.index_1d(0, 8):
+            if state == final_state:
                 step_queue.put(t - last_reward)
                 last_reward = t
                 state = start_state
@@ -141,6 +143,7 @@ def async_manager(processes, epsilon, alpha, gamma, async_update, Tmax):
 
     producer1.join()
     producer2.join()
+
 
     step_list = []
     while not step_queue.empty():
