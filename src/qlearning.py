@@ -1,7 +1,8 @@
 # coding=utf-8
-import numpy as np
-
 from random import random, randint
+
+import click as cl
+import numpy as np
 
 state_grid = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 1],
                        [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -286,9 +287,21 @@ def get_epsilon_greedy_action(epsilon, q_matrix, state):
     return action
 
 
-if __name__ == '__main__':
+# noinspection PyTypeChecker
+@cl.command()
+@cl.option('--episodes', default=1000, help='Number of Successful Runs.')
+@cl.option('--epsilon', '-e', default=0.05, help='Probability of choosing the next action randomly (vs. greedily).')
+@cl.option('--alpha', '-a', default=0.5, help='Learning Rate.')
+@cl.option('--gamma', '-g', default=0.95, help='Discount Factor.')
+def run_q(episodes, epsilon, alpha, gamma):
+    """Command Line Interface for qlearning."""
     np.set_printoptions(suppress=True)
-    q, iterations = qlearning(state_grid, 1000, epsilon=0.05, alpha=0.5, gamma=0.95, updated_grid=updated_grid)
+    print("Initializing Q Learning Algorithm...")
+    q, iterations = qlearning(state_grid, episodes, epsilon=epsilon, alpha=alpha, gamma=gamma,
+                              updated_grid=updated_grid)
     print(q)
-    print(iterations)
-    print(sum(iterations) / len(iterations))
+    print("Average steps per iteration: {}".format(sum(iterations) / len(iterations)))
+
+
+if __name__ == '__main__':
+    run_q()
