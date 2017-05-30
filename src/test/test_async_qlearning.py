@@ -1,3 +1,5 @@
+from random import seed
+
 from src.async_qlearning import *
 
 
@@ -28,3 +30,12 @@ def test_update_delta_q():
                                 [0, 0]])
 
     assert update_delta_q(local_q_matrix, state, action, gamma, reward, next_state, global_q_matrix) == 1.95
+
+
+def test_get_async_epsilon_greedy_action():
+    q_matrix = np.array([[0.1, 0.2],
+                         [0.3, 0.4]])
+    seed(0)
+    state = 0
+    epsilon = 0.01
+    assert get_async_epsilon_greedy_action(epsilon, q_matrix, state) == 1
