@@ -163,7 +163,31 @@ def get_async_epsilon_greedy_action(epsilon, q_matrix, state):
     return action
 
 
-def async_manager(processes, epsilon, alpha, gamma, async_update, Tmax):
+def async_qlearning(processes, epsilon, alpha, gamma, async_update, Tmax):
+    """The main async Q learning function. Manages the async Q-Learning workers.
+
+    Parameters
+    ----------
+    processes : int
+        The number of Q-Learning workers.
+    epsilon : float
+        The probability of choosing the next action randomly. Otherwise, choose the Q-optimal next step.
+    alpha : float
+        The learning rate.
+    gamma : float
+        The discount factor. The weight that the algorithm will consider future rewards. gamma = 0 is entirely greedy.
+    async_update : int
+        The number of steps taken before an update to the global Q function.
+    Tmax : int
+        The maximum number of steps taken all workers can take.
+
+    Returns
+    -------
+    shared_array : ndarray of floats
+        The optimal Q matrix.
+    step_list : list of ints
+        The number of steps per episode for all workers
+    """
     # Assume global shared Q(s, a) function values, and counter T = 0
     T = Value('i', 0)
     r_matrix = ql.make_transition_matrix(ql.state_grid)
@@ -198,12 +222,12 @@ def async_manager(processes, epsilon, alpha, gamma, async_update, Tmax):
     return shared_array, step_list
 
 if __name__ == '__main__':
-    q_matrix, step_list = async_manager(processes=6,
-                                        epsilon=0.55,
-                                        alpha=0.45,
-                                        gamma=0.95,
-                                        async_update=5,
-                                        Tmax=100000)
+    q_matrix, step_list = async_qlearning(processes=6,
+                                          epsilon=0.55,
+                                          alpha=0.45,
+                                          gamma=0.95,
+                                          async_update=5,
+                                          Tmax=100000)
 
     print(q_matrix)
     print(step_list)

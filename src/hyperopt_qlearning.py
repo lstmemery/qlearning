@@ -15,12 +15,12 @@ def objective(params):
 
 
 def async_objective(params):
-    q, iterations = aql.async_manager(processes=6,
-                                      epsilon=params['epsilon'],
-                                      alpha=params['alpha'],
-                                      gamma=0.95,
-                                      async_update=5,
-                                      Tmax=50000)
+    q, iterations = aql.async_qlearning(processes=6,
+                                        epsilon=params['epsilon'],
+                                        alpha=params['alpha'],
+                                        gamma=0.95,
+                                        async_update=5,
+                                        Tmax=50000)
     print(sum(iterations) / len(iterations))
     return sum(iterations) / len(iterations)
 
