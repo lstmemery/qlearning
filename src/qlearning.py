@@ -175,8 +175,8 @@ def update_q(q, state, action, alpha, gamma, reward, next_state):
 
     Returns
     -------
-    q_value : float
-        The value the Q matrix will be updated with
+    next_q : float
+        The value the Q matrix will be updated with.
 
     References
     ----------

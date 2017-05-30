@@ -8,27 +8,46 @@ from random import random, randint
 updated_matrix = ql.make_transition_matrix(ql.updated_grid)
 
 
-def update_delta_q(q, state, action, gamma, reward, next_state, global_q_state):
-    """
+def update_delta_q(local_q_matrix, state, action, gamma, reward, next_state, global_q_state):
+    """Update a local Q matrix, based on the the state and next state of the global Q matrix.
 
     ∆Q(s, a) ← ∆Q(s, a) + r + γ max a Q(s 0 , a) − Q(s, a)
 
     Parameters
     ----------
-    q
-    state
-    action
-    gamma
-    reward
-    next_state
-    global_q_state
+    local_q_matrix : ndararry of floats
+        An 2D Q matrix representing local updates to the Q function.
+    state : int
+        The current state, represented as a row number in the transition matrix.
+    action : int
+        The next action to be taken, represented as a column number in the transition matrix.
+    gamma : float
+        The discount factor. The weight that the algorithm will consider future rewards. gamma = 0 is entirely greedy.
+        Values higher than 1 can cause the algorithm to diverge.[1]
+    reward : int
+        The reward in the transition matrix.
+    next_state : int
+        The next state of the transition matrix.
+    global_q_state : ndarray of floats
+        An 2D Q matrix, representing the global Q function. This 2D matrix is not updated, so it does not require it's
+        lock.
 
     Returns
     -------
+    next_q : float
+        The value the Q matrix will be updated with.
 
+    References
+    ----------
+    1. Q-learning. In: Wikipedia [Internet]. 2017 [cited 2017 May 29]. Available from: https://en.wikipedia.org/w/index.php?title=Q-learning&oldid=762556833
+
+    Notes
+    -----
+    Unlike the synchronous version, this version does not require a. Since a is the same for all local Q updates,
+     it can be applied when the change to the local Q matrix are applied to the global Q matrix.
     """
     max_next_step = max(global_q_state[next_state, :])
-    next_q = q[state, action] + (reward + (gamma * max_next_step) - global_q_state[state, action])
+    next_q = local_q_matrix[state, action] + (reward + (gamma * max_next_step) - global_q_state[state, action])
     return next_q
 
 
