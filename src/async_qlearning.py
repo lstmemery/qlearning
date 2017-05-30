@@ -57,6 +57,36 @@ def update_delta_q(local_q_matrix, state, action, gamma, reward, next_state, glo
 
 
 def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, alpha, global_q_matrix, step_queue, raw_array):
+    """Runs a single process that will find and apply delta Q updates to the global Q-function array.
+
+    Parameters
+    ----------
+    r_matrix : ndarray of ints
+        The transition matrix of the grid world.
+    epsilon : float
+        The probability of choosing the next action randomly. Otherwise, choose the Q-optimal next step.
+    gamma : float
+        The discount factor. The weight that the algorithm will consider future rewards. gamma = 0 is entirely greedy.
+        Values higher than 1 can cause the algorithm to diverge.[1]
+    async_update : int
+        The number of steps taken before an update to the global Q function.
+    T : multiprocessing.Value
+        A global step timer shared between all workers.
+    Tmax : int
+        The maximum number of steps taken all workers can take.
+    alpha : float
+        The learning rate.
+    global_q_matrix : ndarray of floats
+        An 2D Q matrix, representing the global Q function.
+    step_queue : multiprocess.Queue
+        A queue that holds the number of steps taken before the reward is found
+    raw_array : multiprocessing.Array
+        The raw array of global_q_matrix. Required for its lock.
+
+    References
+    ----------
+    1. Q-learning. In: Wikipedia [Internet]. 2017 [cited 2017 May 29]. Available from: https://en.wikipedia.org/w/index.php?title=Q-learning&oldid=762556833
+    """
     # Initialize thread step count t <- 1
     t = 1
     last_reward = 1
