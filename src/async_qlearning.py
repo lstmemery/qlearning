@@ -1,5 +1,5 @@
 # coding=utf-8
-from multiprocessing import Process, Value, Array, Manager, Lock
+from multiprocessing import Process, Value, Array, Manager, Lock, Pool
 import numpy as np
 import src.qlearning as ql
 import ctypes
@@ -128,39 +128,33 @@ def async_manager(processes, epsilon, alpha, gamma, async_update, Tmax):
 
     step_queue = manager.Queue(2048)
 
-    producer1 = Process(target=qlearning_worker, args=(r_matrix, epsilon, gamma,
+    workers = []
+    for _ in range(processes):
+        worker = Process(target=qlearning_worker, args=(r_matrix, epsilon, gamma,
                                                       async_update, T,
                                                       Tmax, alpha, shared_array, step_queue, shared_array_base))
+        workers.append(worker)
+        worker.start()
 
-    producer1.start()
-
-    producer2 = Process(target=qlearning_worker, args=(r_matrix, epsilon,
-                                                       gamma,
-                                                      async_update, T,
-                                                      Tmax, alpha, shared_array, step_queue, shared_array_base))
-
-    producer2.start()
-
-    producer1.join()
-    producer2.join()
-
+    for worker in workers:
+        worker.join()
 
     step_list = []
+
     while not step_queue.empty():
         step_list.append(step_queue.get())
 
     return shared_array, step_list
 
 # TODO: Need graphs as proof
-# TODO: Pool instead of processes
 
 if __name__ == '__main__':
-    q_matrix, step_list = async_manager(processes=2,
+    q_matrix, step_list = async_manager(processes=6,
                                         epsilon=0.55,
                                         alpha=0.45,
                                         gamma=0.95,
                                         async_update=5,
-                                        Tmax=10000)
+                                        Tmax=50000)
 
     print(q_matrix)
     print(step_list)
