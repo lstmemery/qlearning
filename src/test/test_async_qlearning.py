@@ -1,7 +1,6 @@
 from src.async_qlearning import *
 
 
-
 def test_async_q_learning():
     """This is an integration test. It determines whether there was a significant decrease in steps until
     completion.
@@ -15,3 +14,17 @@ def test_async_q_learning():
     average_first_5 = sum(step_list[:5]) / len(step_list[:5])
     average_last_5 = sum(step_list[-5:]) / len(step_list[-5:])
     assert average_first_5 > 4 * average_last_5
+
+
+def test_update_delta_q():
+    local_q_matrix = np.array([[1, 0],
+                               [0, 0]])
+    state = 1
+    action = 0
+    gamma = 0.95
+    reward = 1
+    next_state = 0
+    global_q_matrix = np.array([[0, 1],
+                                [0, 0]])
+
+    assert update_delta_q(local_q_matrix, state, action, gamma, reward, next_state, global_q_matrix) == 1.95

@@ -1,6 +1,6 @@
 # coding=utf-8
-import copy
 import ctypes
+from copy import copy
 from multiprocessing import Process, Value, Array, Manager, Lock
 from random import random, randint
 
@@ -11,7 +11,7 @@ import qlearning as ql
 updated_matrix = ql.make_transition_matrix(ql.updated_grid)
 
 
-def update_delta_q(local_q_matrix, state, action, gamma, reward, next_state, global_q_state):
+def update_delta_q(local_q_matrix, state, action, gamma, reward, next_state, global_q_matrix):
     """Update a local Q matrix, based on the the state and next state of the global Q matrix.
 
     ∆Q(s, a) ← ∆Q(s, a) + r + γ max a Q(s 0 , a) − Q(s, a)
@@ -31,7 +31,7 @@ def update_delta_q(local_q_matrix, state, action, gamma, reward, next_state, glo
         The reward in the transition matrix.
     next_state : int
         The next state of the transition matrix.
-    global_q_state : ndarray of floats
+    global_q_matrix : ndarray of floats
         An 2D Q matrix, representing the global Q function. This 2D matrix is not updated, so it does not require it's
         lock.
 
@@ -49,7 +49,7 @@ def update_delta_q(local_q_matrix, state, action, gamma, reward, next_state, glo
     Unlike the synchronous version, this version does not require a. Since a is the same for all local Q updates,
      it can be applied when the change to the local Q matrix are applied to the global Q matrix.
     """
-    temp_array = copy.copy(global_q_state)
+    temp_array = copy(global_q_matrix)
     max_next_step = max(temp_array[next_state, :])
 
     next_q = local_q_matrix[state, action] + (reward + (gamma * max_next_step) - temp_array[state, action])
@@ -124,7 +124,7 @@ def get_async_epsilon_greedy_action(epsilon, q_matrix, state):
     If there are multiple q-optimal actions (i.e. a tie), this function selects randomly between the optimal values.
 
     """
-    temp_matrix = copy.copy(q_matrix)
+    temp_matrix = copy(q_matrix)
     if random() < epsilon:
         action = randint(0, 3)
     # With probability 1 - \epsilon choose argmax Q
