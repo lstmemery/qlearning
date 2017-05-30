@@ -3,10 +3,10 @@ from multiprocessing import Process, Value, Array, Manager, Lock
 import numpy as np
 import src.qlearning as ql
 import ctypes
-import time
 from random import random, randint
 
 updated_matrix = ql.make_transition_matrix(ql.updated_grid)
+
 
 def update_delta_q(q, state, action, gamma, reward, next_state, global_q_state):
     """
@@ -32,7 +32,7 @@ def update_delta_q(q, state, action, gamma, reward, next_state, global_q_state):
     return next_q
 
 
-def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, q, global_q_matrix, step_queue, raw_array):
+def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, alpha, global_q_matrix, step_queue, raw_array):
     # Initialize thread step count t <- 1 (Not sure why this starts at 1)
     t = 1
     last_reward = 1
@@ -47,12 +47,7 @@ def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, q, global_
         if T.value > 1000:
             r_matrix = updated_matrix
         # Choose action from state s using \epsilon-greedy policy
-        # while not q.empty():
-        #     time.sleep(0.01)
-        # with global_q_matrix.get_lock():
-        #     np_q = to_numpy_array(global_q_matrix, r_matrix.shape)
 
-        print("Selecting")
         action = get_async_epsilon_greedy_action(epsilon, global_q_matrix, state, raw_array)
         # Take action a, observe r, s'
         reward = ql.peek_reward(r_matrix, state, action)
@@ -71,10 +66,8 @@ def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, q, global_
         if t % async_update == 0 or state == ql.index_1d(0, 8):
             # Perform async update
             with raw_array.get_lock():
-                global_q_matrix[delta_q_matrix.nonzero()] += 0.5 * delta_q_matrix[delta_q_matrix.nonzero()]
-            # send_local_q(q, delta_q_matrix)
+                global_q_matrix[delta_q_matrix.nonzero()] += alpha * delta_q_matrix[delta_q_matrix.nonzero()]
 
-            # print("put")
             # clear updates \DeltaQ(s', a')
             delta_q_matrix = np.zeros_like(r_matrix).astype(float)
             if state == ql.index_1d(0, 8):
@@ -82,14 +75,6 @@ def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, q, global_
                 last_reward = t
                 state = start_state
                 total_reward += 1
-
-
-    # print(total_reward)
-    # print(t / total_reward)
-
-
-def send_local_q(q, delta_q_matrix):
-    q.put(delta_q_matrix)
 
 
 def get_async_epsilon_greedy_action(epsilon, q_matrix, state, raw_matrix):
@@ -141,29 +126,21 @@ def async_manager(processes, epsilon, alpha, gamma, async_update, Tmax):
 
     step_queue = manager.Queue(2048)
 
-    # consumer = Process(target=acculmulate_q, args=(q, shared_array,
-    #                                                T, Tmax, alpha, lock))
-
     producer1 = Process(target=qlearning_worker, args=(r_matrix, epsilon, gamma,
                                                       async_update, T,
-                                                      Tmax, q, shared_array, step_queue, shared_array_base))
+                                                      Tmax, alpha, shared_array, step_queue, shared_array_base))
 
     producer1.start()
 
     producer2 = Process(target=qlearning_worker, args=(r_matrix, epsilon,
                                                        gamma,
                                                       async_update, T,
-                                                      Tmax, q, shared_array, step_queue, shared_array_base))
+                                                      Tmax, alpha, shared_array, step_queue, shared_array_base))
 
     producer2.start()
 
-    # consumer.start()
-    #
-    # consumer.join()
     producer1.join()
     producer2.join()
-
-    # q_np = q.get()
 
     step_list = []
     while not step_queue.empty():
