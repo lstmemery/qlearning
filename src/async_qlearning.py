@@ -4,6 +4,7 @@ from copy import copy
 from multiprocessing import Process, Value, Array, Manager, Lock
 from random import random, randint
 
+import click as cl
 import numpy as np
 
 import qlearning as ql
@@ -221,13 +222,27 @@ def async_qlearning(processes, epsilon, alpha, gamma, async_update, Tmax):
 
     return shared_array, step_list
 
-if __name__ == '__main__':
-    q_matrix, step_list = async_qlearning(processes=6,
-                                          epsilon=0.55,
-                                          alpha=0.45,
-                                          gamma=0.95,
-                                          async_update=5,
-                                          Tmax=100000)
 
+# noinspection PyTypeChecker
+@cl.command()
+@cl.option('--processes', '-n', default=2, help='Number of Processes to run.')
+@cl.option('--epsilon', '-e', default=0.30, help='Probability of choosing the next action randomly (vs. greedily).')
+@cl.option('--alpha', '-a', default=0.30, help='Learning Rate.')
+@cl.option('--gamma', '-g', default=0.95, help='Discount Factor.')
+@cl.option('--update', '-u', default=5, help='Number of steps until update.')
+@cl.option('--steps', '-s', default=50000, help='Total number of steps.')
+def run_async_q(processes, epsilon, alpha, gamma, update, steps):
+    """Command Line Interface for async qlearning."""
+    np.set_printoptions(suppress=True)
+    print("Initializing Async Q Learning Algorithm...")
+    q_matrix, step_list = async_qlearning(processes=processes,
+                                          epsilon=epsilon,
+                                          alpha=alpha,
+                                          gamma=gamma,
+                                          async_update=update,
+                                          Tmax=steps)
     print(q_matrix)
-    print(step_list)
+    print("Average steps per iteration: {}".format(sum(step_list) / len(step_list)))
+
+if __name__ == '__main__':
+    run_async_q()
