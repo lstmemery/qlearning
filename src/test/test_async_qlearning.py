@@ -12,7 +12,7 @@ def test_async_q_learning():
                                  alpha=0.45,
                                  gamma=0.95,
                                  async_update=5,
-                                 Tmax=50000)
+                                 Tmax=10000)
     average_first_5 = sum(step_list[:5]) / len(step_list[:5])
     average_last_5 = sum(step_list[-5:]) / len(step_list[-5:])
     assert average_first_5 > 4 * average_last_5
