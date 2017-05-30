@@ -1,4 +1,5 @@
 # coding=utf-8
+import copy
 import ctypes
 from multiprocessing import Process, Value, Array, Manager, Lock
 from random import random, randint
@@ -10,7 +11,7 @@ import qlearning as ql
 updated_matrix = ql.make_transition_matrix(ql.updated_grid)
 
 
-def update_delta_q(local_q_matrix, state, action, gamma, reward, next_state, global_q_state, raw_array):
+def update_delta_q(local_q_matrix, state, action, gamma, reward, next_state, global_q_state):
     """Update a local Q matrix, based on the the state and next state of the global Q matrix.
 
     ∆Q(s, a) ← ∆Q(s, a) + r + γ max a Q(s 0 , a) − Q(s, a)
@@ -48,20 +49,19 @@ def update_delta_q(local_q_matrix, state, action, gamma, reward, next_state, glo
     Unlike the synchronous version, this version does not require a. Since a is the same for all local Q updates,
      it can be applied when the change to the local Q matrix are applied to the global Q matrix.
     """
-    with raw_array.get_lock():
-        max_next_step = max(global_q_state[next_state, :])
+    temp_array = copy.copy(global_q_state)
+    max_next_step = max(temp_array[next_state, :])
 
-    next_q = local_q_matrix[state, action] + (reward + (gamma * max_next_step) - global_q_state[state, action])
+    next_q = local_q_matrix[state, action] + (reward + (gamma * max_next_step) - temp_array[state, action])
     return next_q
 
 
 def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, alpha, global_q_matrix, step_queue, raw_array):
-    # Initialize thread step count t <- 1 (Not sure why this starts at 1)
+    # Initialize thread step count t <- 1
     t = 1
     last_reward = 1
     total_reward = 0
     delta_q_matrix = np.zeros_like(r_matrix).astype(float)
-
     start_state = ql.index_1d(5, 3)
     final_state = ql.index_1d(0, 8)
 
@@ -73,11 +73,11 @@ def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, alpha, glo
             r_matrix = updated_matrix
         # Choose action from state s using \epsilon-greedy policy
 
-        action = get_async_epsilon_greedy_action(epsilon, global_q_matrix, state, raw_array)
+        action = get_async_epsilon_greedy_action(epsilon, global_q_matrix, state)
         # Take action a, observe r, s'
         reward = ql.peek_reward(r_matrix, state, action)
         next_state = ql.peek_next_state(r_matrix, state, action)
-        updated_q = update_delta_q(delta_q_matrix, state, action, gamma, reward, next_state, global_q_matrix, raw_array)
+        updated_q = update_delta_q(delta_q_matrix, state, action, gamma, reward, next_state, global_q_matrix)
         # Accumulate updates:
         delta_q_matrix[state, action] += updated_q
         # s <- s'
@@ -102,7 +102,7 @@ def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, alpha, glo
                 total_reward += 1
 
 
-def get_async_epsilon_greedy_action(epsilon, q_matrix, state, raw_array):
+def get_async_epsilon_greedy_action(epsilon, q_matrix, state):
     """Choose the next action in the q-learning algorithm.
 
     Parameters
@@ -113,26 +113,23 @@ def get_async_epsilon_greedy_action(epsilon, q_matrix, state, raw_array):
         The 2D matrix representing the Q-function.
     state : int
         The current state, represented as a row number in the transition matrix.
-    raw_array : multiprocessing array
-        The multiprocessing array equivalent of q_matrix. This is required for it's lock.
 
     Returns
     -------
     action : int
         The next action to be taken, represented as a column number in the transition matrix.
 
-
     Notes
     -----
     If there are multiple q-optimal actions (i.e. a tie), this function selects randomly between the optimal values.
 
     """
+    temp_matrix = copy.copy(q_matrix)
     if random() < epsilon:
         action = randint(0, 3)
     # With probability 1 - \epsilon choose argmax Q
     else:
-        with raw_array.get_lock():
-            action = np.random.choice(np.where(q_matrix[state] == q_matrix[state].max())[0])
+        action = np.random.choice(np.where(temp_matrix[state] == temp_matrix[state].max())[0])
     return action
 
 
@@ -150,7 +147,7 @@ def async_manager(processes, epsilon, alpha, gamma, async_update, Tmax):
     shared_array = np.ctypeslib.as_array(shared_array_base.get_obj())
     shared_array = shared_array.reshape(r_matrix.shape)
 
-    step_queue = manager.Queue(2048)
+    step_queue = manager.Queue()
 
     workers = []
     for _ in range(processes):
@@ -176,7 +173,7 @@ if __name__ == '__main__':
                                         alpha=0.45,
                                         gamma=0.95,
                                         async_update=5,
-                                        Tmax=50000)
+                                        Tmax=100000)
 
     print(q_matrix)
     print(step_list)
