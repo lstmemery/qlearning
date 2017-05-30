@@ -30,4 +30,18 @@ def test_multiprocess_queue():
 def test_c_to_np_array_conversion():
     test_array = np.array([[1, 2],
                         [3, 4]])
-    assert to_numpy_array(to_mp_array(test_array), test_array.shape).all() == test_array.all()
+    lock = Lock()
+    assert to_numpy_array(to_mp_array(test_array, lock), test_array.shape).all() == test_array.all()
+
+def test_acculmulate_q():
+    test_array = np.array([[1, 2],
+                        [3, 4]])
+    lock = Lock()
+
+    global_q_matrix = to_mp_array(test_array, lock)
+
+    update = np.array([[1, 0],
+                       [0, 0]])
+    acculmulate_q(, global_q_matrix, T, Tmax, alpha, lock)
+
+    assert to_numpy_array(to_mp_array(test_array, lock), test_array.shape).all() == test_array.all()

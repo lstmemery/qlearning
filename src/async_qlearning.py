@@ -1,5 +1,5 @@
 # coding=utf-8
-from multiprocessing import Process, Value, Array, Manager
+from multiprocessing import Process, Value, Array, Manager, Lock
 import numpy as np
 import src.qlearning as ql
 import ctypes
@@ -27,8 +27,6 @@ def update_delta_q(q, state, action, gamma, reward, next_state, global_q_state):
     -------
 
     """
-    if reward == 1:
-        pass
     max_next_step = max(global_q_state[next_state, :])
     next_q = q[state, action] + (reward + (gamma * max_next_step) - global_q_state[state, action])
     return next_q
@@ -51,14 +49,15 @@ def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, q, global_
         # Choose action from state s using \epsilon-greedy policy
         # while not q.empty():
         #     time.sleep(0.01)
-        with global_q_matrix.get_lock():
-            np_q = to_numpy_array(global_q_matrix, r_matrix.shape)
+        # with global_q_matrix.get_lock():
+        #     np_q = to_numpy_array(global_q_matrix, r_matrix.shape)
 
-        action = ql.get_epsilon_greedy_action(epsilon, np_q, state)
+        print("Selecting")
+        action = ql.get_epsilon_greedy_action(epsilon, global_q_matrix, state)
         # Take action a, observe r, s'
         reward = ql.peek_reward(r_matrix, state, action)
         next_state = ql.peek_next_state(r_matrix, state, action)
-        updated_q = update_delta_q(delta_q_matrix, state, action, gamma, reward, next_state, np_q)
+        updated_q = update_delta_q(delta_q_matrix, state, action, gamma, reward, next_state, global_q_matrix)
         # Accumulate updates:
         delta_q_matrix[state, action] += updated_q
         # s <- s'
@@ -71,8 +70,9 @@ def qlearning_worker(r_matrix, epsilon, gamma, async_update, T, Tmax, q, global_
         # if t % I_AsyncUpdate == 0 or s is terminal then
         if t % async_update == 0 or state == ql.index_1d(0, 8):
             # Perform async update
-            send_local_q(q, delta_q_matrix)
-            print("put")
+            global_q_matrix[delta_q_matrix.nonzero()] += 0.5 * delta_q_matrix[delta_q_matrix.nonzero()]
+            # send_local_q(q, delta_q_matrix)
+
             # print("put")
             # clear updates \DeltaQ(s', a')
             delta_q_matrix = np.zeros_like(r_matrix).astype(float)
@@ -91,24 +91,23 @@ def send_local_q(q, delta_q_matrix):
     q.put(delta_q_matrix)
 
 
-def acculmulate_q(q, global_q_matrix, T, Tmax, alpha):
+def acculmulate_q(q, global_q_matrix, T, Tmax, alpha, lock):
     q_np = None
     while T.value <= Tmax or not q.empty():
         if not q.empty():
             local_q_matrix = q.get()
             print("get")
             with global_q_matrix.get_lock():
-
                 q_np = to_numpy_array(global_q_matrix, local_q_matrix.shape)
                 q_np[local_q_matrix.nonzero()] += alpha * local_q_matrix[local_q_matrix.nonzero()]
-                global_q_matrix = to_mp_array(q_np)
+                global_q_matrix = to_mp_array(q_np, lock)
 
     q.put(q_np)
     return
 
 
-def to_mp_array(np_array):
-    mp_array = Array(ctypes.c_double, np_array.flatten())
+def to_mp_array(np_array, lock):
+    mp_array = Array(ctypes.c_double, np_array.flatten(), lock=lock)
     return mp_array
 
 
@@ -126,41 +125,45 @@ def async_manager(processes, epsilon, alpha, gamma, async_update, Tmax):
     global_q_matrix_np = np.zeros_like(r_matrix).astype(float)
     manager = Manager()
 
-    global_q_matrix = to_mp_array(global_q_matrix_np)
-
-
     q = manager.Queue()
+    lock = Lock()
+
+    shared_array_base = Array(ctypes.c_double, r_matrix.shape[0] * r_matrix.shape[1])
+    shared_array = np.ctypeslib.as_array(shared_array_base.get_obj())
+    shared_array = shared_array.reshape(r_matrix.shape)
+
+    global_q_matrix = to_mp_array(global_q_matrix_np, lock=lock)
     step_queue = manager.Queue(2048)
 
-    consumer = Process(target=acculmulate_q, args=(q, global_q_matrix,
-                                                   T, Tmax, alpha))
+    # consumer = Process(target=acculmulate_q, args=(q, shared_array,
+    #                                                T, Tmax, alpha, lock))
 
     producer1 = Process(target=qlearning_worker, args=(r_matrix, epsilon, gamma,
                                                       async_update, T,
-                                                      Tmax, q, global_q_matrix, step_queue))
+                                                      Tmax, q, shared_array, step_queue))
 
     producer1.start()
 
     producer2 = Process(target=qlearning_worker, args=(r_matrix, epsilon,
                                                        gamma,
                                                       async_update, T,
-                                                      Tmax, q, global_q_matrix, step_queue))
+                                                      Tmax, q, shared_array, step_queue))
 
     producer2.start()
 
-    consumer.start()
-
-    consumer.join()
+    # consumer.start()
+    #
+    # consumer.join()
     producer1.join()
     producer2.join()
 
-    q_np = q.get()
+    # q_np = q.get()
 
     step_list = []
     while not step_queue.empty():
         step_list.append(step_queue.get())
 
-    return q_np, step_list
+    return shared_array, step_list
 
 # TODO: Need graphs as proof
 # TODO: Pool instead of processes
